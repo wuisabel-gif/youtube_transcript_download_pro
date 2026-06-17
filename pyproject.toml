@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tubescribe"
+version = "0.1.0"
+description = "Download and archive YouTube transcripts from videos, playlists, and channels."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "wuisabel-gif" }]
+keywords = ["youtube", "transcript", "captions", "subtitles", "cli"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Environment :: Console",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    "youtube-transcript-api>=1.0,<2",
+]
+
+[project.optional-dependencies]
+playlists = ["yt-dlp>=2024.1.0"]
+server = ["flask>=3"]
+dev = ["pytest>=7", "yt-dlp>=2024.1.0", "flask>=3"]
+
+[project.scripts]
+tubescribe = "tubescribe.cli:main"
+tubescribe-serve = "tubescribe.server:main"
+
+[project.urls]
+Homepage = "https://github.com/wuisabel-gif/tubescribe"
+Repository = "https://github.com/wuisabel-gif/tubescribe"
+
+[tool.setuptools.packages.find]
+where = ["src"]

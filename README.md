@@ -65,9 +65,12 @@ tubescribe "https://www.youtube.com/@SomeChannel" -n 25 -o out/ --skip-existing
 | `--skip-existing` | Skip videos already downloaded (needs `--output-dir`) |
 | `--proxy` | Route requests through an `http(s)://` proxy |
 
-> **Blocked from a server/cloud IP?** YouTube rate-limits datacenter addresses.
-> Pass `--proxy http://user:pass@host:port` (CLI) or `tubescribe-serve --proxy …`
-> to route through a residential/proxy endpoint.
+> **Blocked from a server/cloud IP?** YouTube blocks datacenter addresses, so a
+> deployed server needs a **residential** proxy (free/datacenter proxies are also
+> blocked). Use Webshare residential creds —
+> `tubescribe-serve --webshare-username U --webshare-password P` (or the
+> `WEBSHARE_PROXY_USERNAME` / `WEBSHARE_PROXY_PASSWORD` env vars) — or any generic
+> residential endpoint via `--proxy http://user:pass@host:port`.
 
 ### Playlists and channels
 

@@ -33,8 +33,18 @@ def _parse_languages(value) -> list[str]:
     return ["en"]
 
 
-def create_app(web_dir: Path = WEB_DIR, proxy: str | None = None):
+def create_app(
+    web_dir: Path = WEB_DIR,
+    proxy: str | None = None,
+    webshare: tuple[str, str] | None = None,
+):
     from flask import Flask, jsonify, request, send_from_directory
+
+    from .core import webshare_proxy_url
+
+    # yt-dlp (playlist/channel enumeration) takes a plain proxy URL; derive one
+    # from Webshare creds so the same egress is used for enumeration and fetch.
+    ytdlp_proxy = webshare_proxy_url(*webshare) if webshare else proxy
 
     app = Flask(__name__, static_folder=None)
 
@@ -93,7 +103,7 @@ def create_app(web_dir: Path = WEB_DIR, proxy: str | None = None):
         errors: list[dict] = []
         for url in urls:
             try:
-                for vid in resolve_video_ids(url, limit=limit, proxy=proxy):
+                for vid in resolve_video_ids(url, limit=limit, proxy=ytdlp_proxy):
                     if vid not in seen:
                         seen.add(vid)
                         video_ids.append(vid)
@@ -107,7 +117,9 @@ def create_app(web_dir: Path = WEB_DIR, proxy: str | None = None):
         results: list[dict] = []
         for vid in video_ids:
             try:
-                t = fetch_transcript(vid, languages=languages, proxy=proxy)
+                t = fetch_transcript(
+                    vid, languages=languages, proxy=proxy, webshare=webshare
+                )
                 content = render(t, fmt, with_timestamps=timestamps)
                 duration = t.segments[-1].end if t.segments else 0.0
                 results.append(
@@ -147,10 +159,28 @@ def main(argv: list[str] | None = None) -> int:
         metavar="URL",
         help="Route YouTube requests through an http(s):// proxy (helps from blocked IPs).",
     )
+    parser.add_argument(
+        "--webshare-username",
+        default=None,
+        help="Webshare residential proxy username (recommended for cloud hosts).",
+    )
+    parser.add_argument(
+        "--webshare-password",
+        default=None,
+        help="Webshare residential proxy password.",
+    )
     args = parser.parse_args(argv)
 
+    # Flags take precedence; otherwise fall back to env vars (matches wsgi.py).
+    import os
+
+    ws_user = args.webshare_username or os.environ.get("WEBSHARE_PROXY_USERNAME")
+    ws_pass = args.webshare_password or os.environ.get("WEBSHARE_PROXY_PASSWORD")
+    webshare = (ws_user, ws_pass) if ws_user and ws_pass else None
+    proxy = args.proxy or os.environ.get("TUBESCRIBE_PROXY") or None
+
     try:
-        app = create_app(proxy=args.proxy)
+        app = create_app(proxy=proxy, webshare=webshare)
     except ImportError:
         print(
             "Flask is required to run the server. Install it with:\n"

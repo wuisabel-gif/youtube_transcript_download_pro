@@ -74,10 +74,21 @@ class Transcript:
     segments: list[Segment]
 
 
+def webshare_proxy_url(username: str, password: str) -> str:
+    """Build the rotating-endpoint URL for Webshare residential proxies.
+
+    Mirrors how youtube-transcript-api's ``WebshareProxyConfig`` rotates across
+    the pool (``-rotate`` username suffix); used to pass the same proxy to
+    yt-dlp for playlist/channel enumeration.
+    """
+    return f"http://{username}-rotate:{password}@p.webshare.io:80"
+
+
 def fetch_transcript(
     video_id: str,
     languages: Iterable[str] = ("en",),
     proxy: str | None = None,
+    webshare: tuple[str, str] | None = None,
 ) -> Transcript:
     """Fetch the best available transcript for a video.
 
@@ -85,8 +96,11 @@ def fetch_transcript(
     to an auto-generated one, then to any available transcript that can be
     translated into the first requested language.
 
-    ``proxy`` is an optional ``http(s)://`` URL routed through for the request —
-    useful from cloud IPs that YouTube rate-limits or blocks.
+    Proxy options (for cloud IPs that YouTube blocks):
+      - ``webshare`` — a ``(username, password)`` pair for Webshare residential
+        proxies (recommended; uses the rotating residential pool).
+      - ``proxy`` — a generic ``http(s)://`` proxy URL.
+    ``webshare`` takes precedence if both are given.
     """
     # Imported lazily so ``--help`` and unit tests don't require the network dep.
     from youtube_transcript_api import YouTubeTranscriptApi
@@ -97,7 +111,15 @@ def fetch_transcript(
     )
 
     langs = list(languages) or ["en"]
-    if proxy:
+    if webshare:
+        from youtube_transcript_api.proxies import WebshareProxyConfig
+
+        api = YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+                proxy_username=webshare[0], proxy_password=webshare[1]
+            )
+        )
+    elif proxy:
         from youtube_transcript_api.proxies import GenericProxyConfig
 
         api = YouTubeTranscriptApi(

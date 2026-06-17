@@ -1,7 +1,20 @@
 import pytest
 
-from tubescribe.core import Segment, Transcript, TubeScribeError, extract_video_id
+from tubescribe.core import (
+    Segment,
+    Transcript,
+    TubeScribeError,
+    extract_video_id,
+    webshare_proxy_url,
+)
 from tubescribe import formats
+
+
+def test_webshare_proxy_url():
+    assert (
+        webshare_proxy_url("user", "pass")
+        == "http://user-rotate:pass@p.webshare.io:80"
+    )
 
 
 @pytest.mark.parametrize(

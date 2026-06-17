@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tubescribe-web",
+      "runtimeExecutable": "tubescribe-serve",
+      "runtimeArgs": ["--port", "8778"],
+      "port": 8778
+    }
+  ]
+}

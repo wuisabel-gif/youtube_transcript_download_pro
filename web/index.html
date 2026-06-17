@@ -1378,24 +1378,35 @@ dQw4w9WgXcQ"></textarea>
       // ===== FETCH handler (calls the backend) =====
       const FETCH_STEPS = ["Contacting backend", "Expanding sources", "Fetching transcripts", "Formatting"];
 
+      let backendUp = false;
+
       async function detectBackend() {
         const el = $("backend-state");
+        const btn = $("fetch-btn");
         try {
           const res = await fetch("/api/health", { method: "GET" });
           if (!res.ok) throw new Error();
           await res.json();
+          backendUp = true;
+          btn.disabled = false;
           el.className = "up";
           el.innerHTML = '<span class="ind"></span> Backend connected';
           return true;
         } catch {
+          // No backend (e.g. static GitHub Pages): disable live fetch and steer
+          // users to the command below instead of letting the POST 405/404.
+          backendUp = false;
+          btn.disabled = true;
           el.className = "down";
           el.innerHTML =
-            '<span class="ind"></span> No backend — run <code>tubescribe-serve</code> to fetch live';
+            '<span class="ind"></span> No backend here — copy the command below, or run <code>tubescribe-serve</code> locally';
           return false;
         }
       }
 
       $("fetch-btn").addEventListener("click", async () => {
+        if (!backendUp) return; // guard: button is disabled without a backend
+
         const lines = $("urls").value.split("\n").map((l) => l.trim()).filter(Boolean);
         const valid = lines.map(classify).filter((p) => p && p.kind !== "bad");
         if (!valid.length) {

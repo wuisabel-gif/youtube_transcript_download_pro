@@ -23,8 +23,8 @@ dependencies = [
 
 [project.optional-dependencies]
 playlists = ["yt-dlp>=2024.1.0"]
-server = ["flask>=3"]
-dev = ["pytest>=7", "yt-dlp>=2024.1.0", "flask>=3"]
+server = ["flask>=3", "gunicorn>=21"]
+dev = ["pytest>=7", "yt-dlp>=2024.1.0", "flask>=3", "gunicorn>=21"]
 
 [project.scripts]
 tubescribe = "tubescribe.cli:main"

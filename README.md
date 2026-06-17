@@ -20,13 +20,15 @@ tubescribe https://youtu.be/dQw4w9WgXcQ
 ## Install
 
 ```bash
-pip install -e .                 # core: single videos
-pip install -e ".[playlists]"    # + playlist/channel bulk download (adds yt-dlp)
+pip install -e .                          # core: single videos
+pip install -e ".[playlists]"             # + playlist/channel bulk download (adds yt-dlp)
+pip install -e ".[server,playlists]"      # + the web UI / API server (adds Flask)
 ```
 
 This installs the `tubescribe` console command. The `playlists` extra adds
 [`yt-dlp`](https://github.com/yt-dlp/yt-dlp), which TubeScribe uses to enumerate
-the videos in a playlist or channel.
+the videos in a playlist or channel. The `server` extra adds the
+`tubescribe-serve` command (see [Web UI](#web-ui)).
 
 ## Usage
 
@@ -72,6 +74,48 @@ videos before fetching transcripts:
   (a bare channel URL resolves to its **Videos** tab)
 
 Requires the `playlists` extra (`pip install -e ".[playlists]"`).
+
+## Web UI
+
+TubeScribe ships with a small single-page web app (`web/index.html`) and a thin
+Flask backend that reuses the same library functions as the CLI.
+
+```bash
+pip install -e ".[server,playlists]"
+tubescribe-serve            # → http://127.0.0.1:8000
+```
+
+Open the URL and you get two tabs:
+
+- **Get transcript** — paste video/playlist/channel URLs; the page validates each
+  one live, then either **fetches transcripts** through the backend (download per
+  video) or shows the exact `tubescribe` command to run yourself.
+- **Convert transcript** — paste `tubescribe … -f json` output and convert it to
+  `txt`/`srt`/`vtt` entirely in the browser, no backend needed.
+
+The page degrades gracefully: opened directly as a file (no backend), the live
+**Fetch** button is disabled and you still get the command builder and converter.
+
+### API
+
+The backend exposes one endpoint:
+
+```
+POST /api/transcript
+{
+  "urls": ["VIDEO_ID", "https://www.youtube.com/playlist?list=..."],
+  "format": "srt",          // txt | srt | vtt | json
+  "languages": "en,es",     // string or list
+  "timestamps": false,      // txt only
+  "limit": 25               // cap per playlist/channel
+}
+→ { "results": [ { "video_id", "filename", "language", "segments", "duration", "content" } ],
+    "errors":  [ { "input", "error" } ],
+    "truncated": false }
+```
+
+Playlist/channel URLs are expanded server-side; one bad input never fails the
+whole request — it lands in `errors` instead.
 
 ## Development
 

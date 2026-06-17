@@ -1,0 +1,17 @@
+# Render Blueprint — deploys TubeScribe as a single web service that serves
+# both the web UI and the /api backend.
+#
+# YouTube blocks many datacenter IPs, so live fetch may fail until you set a
+# proxy: add TUBESCRIBE_PROXY (e.g. a Webshare URL) in the Render dashboard.
+services:
+  - type: web
+    name: tubescribe
+    runtime: python
+    plan: free
+    buildCommand: pip install ".[server,playlists]"
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: TUBESCRIBE_PROXY
+        sync: false # optional; set in dashboard if YouTube blocks the server IP

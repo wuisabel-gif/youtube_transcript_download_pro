@@ -19,6 +19,15 @@
     <meta name="theme-color" content="#1d4ed8" />
 
     <style>
+      /* Custom UI font — ALK Life, served locally from web/assets/fonts. */
+      @font-face {
+        font-family: "ALK Life";
+        src: url("./assets/fonts/alk-life-webfont.ttf") format("truetype");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
       :root {
         --brand-black: #eef2f7;
         --brand-dark: #e2e8f0;
@@ -35,7 +44,7 @@
         --slate-500: #64748b;
         --slate-400: #94a3b8;
 
-        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-sans: "ALK Life", "Inter", ui-sans-serif, system-ui, sans-serif;
         --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
       }
 

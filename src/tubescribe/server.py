@@ -52,6 +52,11 @@ def create_app(web_dir: Path = WEB_DIR, proxy: str | None = None):
             return ("web/index.html not found — run from a source checkout.", 404)
         return send_from_directory(web_dir, "index.html")
 
+    @app.get("/assets/<path:filename>")
+    def assets(filename):
+        # Serve static assets (fonts, etc.) that index.html references.
+        return send_from_directory(web_dir / "assets", filename)
+
     @app.get("/api/health")
     def health():
         return jsonify({"ok": True, "service": "tubescribe"})

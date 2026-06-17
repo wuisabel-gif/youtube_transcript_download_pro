@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>TubeScribe — YouTube Transcript Downloader</title>
+    <meta
+      name="description"
+      content="TubeScribe downloads and archives YouTube transcripts from videos, playlists, and channels as TXT, SRT, VTT, or JSON. Build the CLI command or convert a transcript right in your browser."
+    />
+    <meta name="theme-color" content="#1d4ed8" />
+
+    <style>
+      /* Custom UI font — ALK Life, served locally from web/assets/fonts. */
+      @font-face {
+        font-family: "ALK Life";
+        src: url("./assets/fonts/alk-life-webfont.ttf") format("truetype");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --brand-black: #eef2f7;
+        --brand-dark: #e2e8f0;
+        --brand-card: #ffffff;
+        --brand-border: #d7dfea;
+        --brand-blue: #3b82f6;
+        --brand-bright: #1d4ed8;
+        --brand-glow: #1d4ed8;
+
+        --slate-900: #0f172a;
+        --slate-800: #1e293b;
+        --slate-700: #334155;
+        --slate-600: #475569;
+        --slate-500: #64748b;
+        --slate-400: #94a3b8;
+
+        --font-sans: "ALK Life", "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        background-color: var(--brand-black);
+        color: var(--slate-800);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.5;
+      }
+      h1,
+      h2,
+      h3 {
+        text-wrap: balance;
+        margin: 0;
+      }
+      code,
+      .mono {
+        font-family: var(--font-mono);
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--brand-black);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--brand-border);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--brand-glow);
+      }
+
+      .app {
+        display: flex;
+        min-height: 100%;
+        flex-direction: column;
+      }
+
+      /* HEADER */
+      header {
+        border-bottom: 1px solid rgba(215, 223, 234, 0.7);
+        padding: 14px 20px;
+      }
+      .header-inner {
+        margin: 0 auto;
+        max-width: 1024px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .brand-logo {
+        display: flex;
+        height: 28px;
+        width: 28px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--brand-blue);
+        color: #fff;
+      }
+      .brand-logo svg {
+        height: 16px;
+        width: 16px;
+      }
+      .brand-name {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        color: var(--slate-900);
+      }
+      .pill {
+        border: 1px solid var(--brand-border);
+        background: #fff;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--slate-500);
+      }
+
+      main {
+        flex: 1;
+      }
+
+      /* HERO */
+      .hero {
+        position: relative;
+        padding: 48px 20px 64px;
+        overflow: hidden;
+      }
+      .hero-graph {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.55;
+      }
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        margin: 0 auto;
+        max-width: 640px;
+      }
+      h1.title {
+        text-align: center;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--slate-900);
+      }
+      .subtitle {
+        margin: 12px auto 0;
+        max-width: 520px;
+        text-align: center;
+        font-size: 16px;
+        color: var(--slate-600);
+      }
+      .subtitle code {
+        background: var(--brand-dark);
+        border-radius: 5px;
+        padding: 1px 6px;
+        font-size: 13px;
+      }
+
+      .chips {
+        margin: 20px 0 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--brand-border);
+        background: #fff;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--slate-600);
+      }
+      .chip svg {
+        height: 14px;
+        width: 14px;
+        color: var(--brand-blue);
+      }
+
+      /* CARD / COMPOSER */
+      .card {
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: 16px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+      .composer {
+        margin-top: 32px;
+        padding: 16px;
+      }
+
+      .tabs {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px;
+        background: var(--brand-black);
+        border: 1px solid var(--brand-border);
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+      .tab {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        border-radius: 9px;
+        padding: 7px 14px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--slate-500);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .tab[aria-selected="true"] {
+        background: #fff;
+        color: var(--brand-bright);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+      }
+
+      label.field-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--slate-600);
+        margin-bottom: 6px;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--slate-500);
+      }
+
+      textarea,
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: 100%;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        color: var(--slate-800);
+        background: var(--brand-black);
+        border: 1px solid var(--brand-border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      textarea:focus,
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--brand-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+      select {
+        cursor: pointer;
+      }
+
+      .options-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .check-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 14px;
+      }
+      .check {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--slate-700);
+        cursor: pointer;
+        user-select: none;
+      }
+      .check input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--brand-blue);
+        cursor: pointer;
+      }
+
+      .actions {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+      .btn {
+        appearance: none;
+        border: 1px solid var(--brand-border);
+        background: #fff;
+        color: var(--slate-700);
+        border-radius: 10px;
+        padding: 9px 16px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.15s ease;
+      }
+      .btn:hover {
+        border-color: var(--brand-blue);
+        color: var(--brand-blue);
+      }
+      .btn svg {
+        height: 16px;
+        width: 16px;
+      }
+      .btn-primary {
+        background: var(--brand-blue);
+        border-color: var(--brand-blue);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--brand-bright);
+        border-color: var(--brand-bright);
+        color: #fff;
+      }
+      .btn-primary:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .btn-ghost {
+        border-color: transparent;
+        background: transparent;
+        color: var(--slate-500);
+      }
+
+      .error {
+        margin-top: 12px;
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+        color: #b91c1c;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      /* parse feedback list */
+      .parse-list {
+        list-style: none;
+        margin: 14px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .parse-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        background: var(--brand-black);
+        border: 1px solid var(--brand-border);
+        border-radius: 9px;
+        padding: 7px 10px;
+      }
+      .parse-item .badge {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 2px 7px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .badge.video {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge.playlist {
+        background: #ede9fe;
+        color: #6d28d9;
+      }
+      .badge.channel {
+        background: #dcfce7;
+        color: #15803d;
+      }
+      .badge.bad {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .parse-item .src {
+        color: var(--slate-600);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        min-width: 0;
+      }
+      .parse-item .got {
+        color: var(--slate-400);
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      /* command / code block */
+      .codeblock {
+        margin-top: 16px;
+        position: relative;
+      }
+      .codeblock pre {
+        margin: 0;
+        background: #0f172a;
+        color: #e2e8f0;
+        border-radius: 12px;
+        padding: 16px 18px;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .codeblock .tok-cmd {
+        color: #7dd3fc;
+      }
+      .codeblock .tok-flag {
+        color: #fca5a5;
+      }
+      .codeblock .tok-str {
+        color: #86efac;
+      }
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #e2e8f0;
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      /* progress steps */
+      .steps {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: var(--slate-500);
+        transition: color 0.2s ease;
+      }
+      .step .dot {
+        height: 18px;
+        width: 18px;
+        border-radius: 999px;
+        border: 2px solid var(--brand-border);
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .step.active {
+        color: var(--brand-bright);
+        font-weight: 600;
+      }
+      .step.active .dot {
+        border-color: var(--brand-blue);
+        animation: pulse 1s ease-in-out infinite;
+      }
+      .step.done {
+        color: var(--slate-700);
+      }
+      .step.done .dot {
+        border-color: var(--brand-blue);
+        background: var(--brand-blue);
+      }
+      .step.done .dot svg {
+        height: 11px;
+        width: 11px;
+        color: #fff;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(59, 130, 246, 0);
+        }
+      }
+
+      /* placeholder preview */
+      .preview-empty {
+        margin-top: 20px;
+        border: 1px dashed var(--brand-border);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.6);
+        padding: 28px;
+        text-align: center;
+        color: var(--slate-500);
+        font-size: 14px;
+      }
+
+      /* RESULTS */
+      .results {
+        margin: 0 auto;
+        max-width: 1024px;
+        padding: 32px 20px;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .stat {
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: 14px;
+        padding: 14px 16px;
+      }
+      .stat .label {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--slate-500);
+      }
+      .stat .value {
+        margin-top: 4px;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--slate-900);
+        font-family: var(--font-mono);
+      }
+
+      .output-pre {
+        margin-top: 16px;
+        background: var(--brand-card);
+        border: 1px solid var(--brand-border);
+        border-radius: 14px;
+        padding: 16px 18px;
+        max-height: 440px;
+        overflow: auto;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--slate-700);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      footer {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 1024px;
+        padding: 16px 20px 32px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--slate-400);
+      }
+      footer a {
+        color: var(--slate-500);
+        font-weight: 500;
+        text-decoration: none;
+      }
+      footer a:hover {
+        color: var(--brand-blue);
+      }
+
+      .or-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 18px 0 4px;
+        color: var(--slate-400);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .or-divider::before,
+      .or-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--brand-border);
+      }
+
+      #backend-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #backend-state.up {
+        color: #15803d;
+      }
+      #backend-state.down {
+        color: var(--slate-400);
+      }
+      #backend-state .ind {
+        height: 7px;
+        width: 7px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      .spinner {
+        height: 15px;
+        width: 15px;
+        border-radius: 999px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #fff;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .results-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .vid-card {
+        margin-top: 14px;
+        padding: 14px 16px;
+      }
+      .vid-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .vid-meta {
+        font-size: 12px;
+        color: var(--slate-500);
+        margin-left: 6px;
+      }
+      .vid-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .btn-sm {
+        padding: 5px 11px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
+      .vid-pre {
+        margin-top: 0;
+        max-height: 240px;
+      }
+
+      .err-card {
+        margin-top: 14px;
+        padding: 14px 16px;
+        border-color: #fecaca;
+        background: #fef6f6;
+      }
+      .err-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #b91c1c;
+        margin-bottom: 8px;
+      }
+      .err-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        padding: 5px 0;
+      }
+      .err-row .src {
+        color: var(--slate-700);
+        font-weight: 500;
+      }
+      .err-row .got {
+        color: var(--slate-500);
+        font-size: 12px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 480px) {
+        h1.title {
+          font-size: 28px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- HEADER -->
+      <header>
+        <div class="header-inner">
+          <div class="brand">
+            <span class="brand-logo" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  d="M3.105 2.289a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25H12a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.085l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.289Z"
+                />
+              </svg>
+            </span>
+            <span class="brand-name">TubeScribe</span>
+          </div>
+          <span class="pill">Local-first · No API key</span>
+        </div>
+      </header>
+
+      <main>
+        <!-- HERO + COMPOSER -->
+        <section class="hero" id="entry">
+          <svg class="hero-graph" viewBox="0 0 1024 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <radialGradient id="g" cx="50%" cy="0%" r="80%">
+                <stop offset="0%" stop-color="#bfdbfe" stop-opacity="0.7" />
+                <stop offset="100%" stop-color="#eef2f7" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+            <rect width="1024" height="400" fill="url(#g)" />
+            <g stroke="#bfdbfe" stroke-width="1.5" fill="none" opacity="0.6">
+              <path d="M120 90 L300 160 L240 280" />
+              <path d="M300 160 L520 110 L720 180" />
+              <path d="M520 110 L640 250" />
+              <path d="M720 180 L900 120" />
+            </g>
+            <g fill="#3b82f6">
+              <circle cx="120" cy="90" r="5" /><circle cx="300" cy="160" r="6" />
+              <circle cx="240" cy="280" r="4" /><circle cx="520" cy="110" r="6" />
+              <circle cx="720" cy="180" r="5" /><circle cx="640" cy="250" r="4" />
+              <circle cx="900" cy="120" r="5" />
+            </g>
+          </svg>
+
+          <div class="hero-inner">
+            <h1 class="title">Download YouTube transcripts, cleanly</h1>
+            <p class="subtitle">
+              Turn any video, playlist, or channel into <code>txt</code>, <code>srt</code>,
+              <code>vtt</code>, or <code>json</code>. Build the exact command, or convert a
+              transcript right here in your browser.
+            </p>
+
+            <ul class="chips">
+              <li class="chip">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm3.03 4.97a.75.75 0 0 1 0 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-1.5-1.5a.75.75 0 1 1 1.06-1.06l.97.97 2.97-2.97a.75.75 0 0 1 1.06 0Z"/></svg>
+                Free &amp; open source
+              </li>
+              <li class="chip">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 0 0-3 3v2H4.5A1.5 1.5 0 0 0 3 7.5v5A1.5 1.5 0 0 0 4.5 14h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 6H11V4a3 3 0 0 0-3-3Zm1.5 5h-3V4a1.5 1.5 0 0 1 3 0v2Z"/></svg>
+                Runs in your browser
+              </li>
+              <li class="chip">
+                <svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="1.3"/><rect x="9" y="2" width="5" height="5" rx="1.3"/><rect x="2" y="9" width="5" height="5" rx="1.3"/><rect x="9" y="9" width="5" height="5" rx="1.3"/></svg>
+                Playlists &amp; channels
+              </li>
+              <li class="chip">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a.75.75 0 0 1 .75.75v6.19l1.72-1.72a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 0 1 1.06-1.06l1.72 1.72V2.25A.75.75 0 0 1 8 1.5ZM3 11.75a.75.75 0 0 1 .75.75v.5c0 .14.11.25.25.25h8a.25.25 0 0 0 .25-.25v-.5a.75.75 0 0 1 1.5 0v.5A1.75 1.75 0 0 1 12 14.75H4a1.75 1.75 0 0 1-1.75-1.75v-.5a.75.75 0 0 1 .75-.75Z"/></svg>
+                TXT · SRT · VTT · JSON
+              </li>
+            </ul>
+
+            <!-- COMPOSER -->
+            <div class="card composer">
+              <div class="tabs" role="tablist">
+                <button class="tab" role="tab" aria-selected="true" data-tab="get">Get transcript</button>
+                <button class="tab" role="tab" aria-selected="false" data-tab="convert">Convert transcript</button>
+              </div>
+
+              <!-- TAB: GET TRANSCRIPT -->
+              <div data-panel="get">
+                <label class="field-label" for="urls">YouTube URLs or video ids — one per line</label>
+                <textarea id="urls" placeholder="https://www.youtube.com/watch?v=8jPQjjsBbIc
+https://www.youtube.com/playlist?list=PLOU2XLYxmsIKpaV8h0AGE05so0fAwwfTw
+https://www.youtube.com/@TED
+dQw4w9WgXcQ"></textarea>
+
+                <div class="options-grid">
+                  <div>
+                    <label class="field-label" for="fmt">Format</label>
+                    <select id="fmt">
+                      <option value="txt">txt — plain text</option>
+                      <option value="srt">srt — SubRip subtitles</option>
+                      <option value="vtt">vtt — WebVTT</option>
+                      <option value="json">json — structured</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label" for="lang">Languages</label>
+                    <input type="text" id="lang" value="en" placeholder="en,es" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="outdir">Output dir</label>
+                    <input type="text" id="outdir" placeholder="out/" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="limit">Limit (playlists)</label>
+                    <input type="number" id="limit" min="1" placeholder="e.g. 25" />
+                  </div>
+                </div>
+
+                <div class="check-row">
+                  <label class="check"><input type="checkbox" id="ts" /> Timestamps (txt)</label>
+                  <label class="check"><input type="checkbox" id="skip" /> Skip existing</label>
+                </div>
+
+                <ul class="parse-list" id="parse-list"></ul>
+
+                <div class="actions">
+                  <button class="btn btn-primary" id="fetch-btn">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2.5a.75.75 0 0 1 .75.75v7.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V3.25A.75.75 0 0 1 10 2.5ZM4 14.5a.75.75 0 0 1 .75.75v.75c0 .14.11.25.25.25h10a.25.25 0 0 0 .25-.25v-.75a.75.75 0 0 1 1.5 0v.75A1.75 1.75 0 0 1 15 17.5H5a1.75 1.75 0 0 1-1.75-1.75v-.75A.75.75 0 0 1 4 14.5Z"/></svg>
+                    Fetch transcripts
+                  </button>
+                  <span class="hint" id="backend-state">checking backend…</span>
+                </div>
+
+                <div class="or-divider"><span>or run it yourself</span></div>
+
+                <div class="codeblock" id="cmd-block">
+                  <button class="copy-btn" id="copy-cmd">Copy</button>
+                  <pre id="cmd"></pre>
+                </div>
+                <p class="hint" id="cmd-hint" style="margin-top: 10px"></p>
+              </div>
+
+              <!-- TAB: CONVERT TRANSCRIPT -->
+              <div data-panel="convert" class="hidden">
+                <label class="field-label" for="json-in">
+                  Paste JSON from <code>tubescribe … -f json</code> (or an array of segments)
+                </label>
+                <textarea id="json-in" placeholder='{
+  "video_id": "8jPQjjsBbIc",
+  "language": "English",
+  "segments": [
+    { "text": "Hello world", "start": 0.0, "duration": 1.5 },
+    { "text": "second line", "start": 1.5, "duration": 2.0 }
+  ]
+}'></textarea>
+
+                <div class="options-grid">
+                  <div>
+                    <label class="field-label" for="cfmt">Convert to</label>
+                    <select id="cfmt">
+                      <option value="txt">txt — plain text</option>
+                      <option value="srt">srt — SubRip subtitles</option>
+                      <option value="vtt">vtt — WebVTT</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="check-row">
+                  <label class="check"><input type="checkbox" id="cts" /> Timestamps (txt)</label>
+                </div>
+
+                <div class="actions">
+                  <button class="btn btn-primary" id="convert-btn">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a.75.75 0 0 1 .75.75v8.69l2.72-2.72a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0l-4-4a.75.75 0 1 1 1.06-1.06l2.72 2.72V4.25A.75.75 0 0 1 10 3.5Z"/></svg>
+                    Convert &amp; preview
+                  </button>
+                  <button class="btn btn-ghost" id="sample-btn">Load sample</button>
+                </div>
+
+                <div id="convert-error" class="error hidden"></div>
+              </div>
+
+              <!-- shared progress + empty preview -->
+              <div id="progress" class="steps hidden"></div>
+            </div>
+
+            <div id="entry-preview" class="preview-empty">
+              Your transcript preview will appear here.
+            </div>
+          </div>
+        </section>
+
+        <!-- RESULTS (shared by fetch + convert) -->
+        <section class="results hidden" id="results">
+          <div class="results-head">
+            <div>
+              <h1 id="results-title" style="font-size: 24px; font-weight: 700; color: var(--slate-900);"></h1>
+              <p class="hint" id="results-sub" style="margin-top: 2px;"></p>
+            </div>
+            <button class="btn btn-ghost" id="reset-btn">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a6.5 6.5 0 1 0 6.326 8.013.75.75 0 0 1 1.458.352A8 8 0 1 1 10 2c1.79 0 3.43.59 4.755 1.587V2.75a.75.75 0 0 1 1.5 0V6a.75.75 0 0 1-.75.75h-3.25a.75.75 0 0 1 0-1.5h1.41A6.47 6.47 0 0 0 10 3.5Z"/></svg>
+              Start over
+            </button>
+          </div>
+          <div id="results-body"></div>
+        </section>
+      </main>
+
+      <footer>
+        <p>Local-first · No API key · The browser never uploads your data.</p>
+        <p style="margin-top: 6px;">
+          Built with
+          <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener noreferrer">yt-dlp</a>
+          &amp; youtube-transcript-api ·
+          <a href="https://github.com/uscauv/tubescribe" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      // ----- Logic ported from TubeScribe's core.py / formats.py / sources.py -----
+      const VIDEO_ID_RE = /^[0-9A-Za-z_-]{11}$/;
+      const YT_HOSTS = new Set(["youtube.com", "m.youtube.com", "music.youtube.com"]);
+      const CHANNEL_PREFIXES = ["/@", "/channel/", "/c/", "/user/"];
+
+      function extractVideoId(raw) {
+        const c = raw.trim();
+        if (VIDEO_ID_RE.test(c)) return c;
+        let u;
+        try {
+          u = new URL(c);
+        } catch {
+          return null;
+        }
+        const host = (u.hostname || "").toLowerCase().replace(/^www\./, "");
+        if (host === "youtu.be") {
+          const vid = u.pathname.replace(/^\//, "").split("/")[0];
+          return VIDEO_ID_RE.test(vid) ? vid : null;
+        }
+        if (YT_HOSTS.has(host)) {
+          if (u.pathname === "/watch") {
+            const vid = u.searchParams.get("v") || "";
+            return VIDEO_ID_RE.test(vid) ? vid : null;
+          }
+          const parts = u.pathname.split("/").filter(Boolean);
+          if (parts.length >= 2 && ["embed", "shorts", "v", "live"].includes(parts[0])) {
+            return VIDEO_ID_RE.test(parts[1]) ? parts[1] : null;
+          }
+        }
+        return null;
+      }
+
+      function classify(raw) {
+        const c = raw.trim();
+        if (!c) return null;
+        if (VIDEO_ID_RE.test(c)) return { kind: "video", value: c, id: c };
+        let u;
+        try {
+          u = new URL(c);
+        } catch {
+          return { kind: "bad", value: c };
+        }
+        const host = (u.hostname || "").toLowerCase().replace(/^www\./, "");
+        if (YT_HOSTS.has(host)) {
+          if (u.searchParams.has("list") && u.pathname !== "/watch")
+            return { kind: "playlist", value: c };
+          if (u.pathname === "/playlist") return { kind: "playlist", value: c };
+          if (u.searchParams.has("list")) return { kind: "playlist", value: c };
+          if (CHANNEL_PREFIXES.some((p) => u.pathname.startsWith(p)))
+            return { kind: "channel", value: c };
+        }
+        const id = extractVideoId(c);
+        if (id) return { kind: "video", value: c, id };
+        return { kind: "bad", value: c };
+      }
+
+      // ---- formatters ----
+      function fmtTs(seconds, comma) {
+        let millis = Math.round(seconds * 1000);
+        const h = Math.floor(millis / 3600000);
+        millis -= h * 3600000;
+        const m = Math.floor(millis / 60000);
+        millis -= m * 60000;
+        const s = Math.floor(millis / 1000);
+        millis -= s * 1000;
+        const p = (n, w) => String(n).padStart(w, "0");
+        const sep = comma ? "," : ".";
+        return `${p(h, 2)}:${p(m, 2)}:${p(s, 2)}${sep}${p(millis, 3)}`;
+      }
+      function toTxt(segs, withTs) {
+        return (
+          segs
+            .map((sg) => {
+              const t = (sg.text || "").replace(/\n/g, " ").trim();
+              return withTs ? `[${fmtTs(sg.start, false).split(".")[0]}] ${t}` : t;
+            })
+            .join("\n") + "\n"
+        );
+      }
+      function toSrt(segs) {
+        return segs
+          .map((sg, i) => {
+            const start = fmtTs(sg.start, true);
+            const end = fmtTs(sg.start + sg.duration, true);
+            return `${i + 1}\n${start} --> ${end}\n${(sg.text || "").trim()}\n`;
+          })
+          .join("\n");
+      }
+      function toVtt(segs) {
+        const blocks = ["WEBVTT\n"];
+        for (const sg of segs) {
+          const start = fmtTs(sg.start, false);
+          const end = fmtTs(sg.start + sg.duration, false);
+          blocks.push(`${start} --> ${end}\n${(sg.text || "").trim()}\n`);
+        }
+        return blocks.join("\n");
+      }
+      function render(segs, fmt, withTs) {
+        if (fmt === "txt") return toTxt(segs, withTs);
+        if (fmt === "srt") return toSrt(segs);
+        if (fmt === "vtt") return toVtt(segs);
+        return "";
+      }
+
+      // ---- shell quoting for the command builder ----
+      function shQuote(s) {
+        return /[?&=\s'"]/.test(s) ? `'${s.replace(/'/g, `'\\''`)}'` : s;
+      }
+
+      // ----- DOM wiring -----
+      const $ = (id) => document.getElementById(id);
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      // tab switching
+      let activeTab = "get";
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          activeTab = tab.dataset.tab;
+          document.querySelectorAll(".tab").forEach((t) =>
+            t.setAttribute("aria-selected", String(t === tab))
+          );
+          document.querySelectorAll("[data-panel]").forEach((p) =>
+            p.classList.toggle("hidden", p.dataset.panel !== activeTab)
+          );
+          $("progress").classList.add("hidden");
+          $("entry-preview").classList.toggle(
+            "hidden",
+            activeTab === "get"
+          );
+        });
+      });
+
+      // ===== GET TRANSCRIPT tab: live command builder =====
+      const getInputs = ["urls", "fmt", "lang", "outdir", "limit", "ts", "skip"];
+
+      function badgeLabel(kind) {
+        return {
+          video: "video",
+          playlist: "playlist",
+          channel: "channel",
+          bad: "invalid",
+        }[kind];
+      }
+
+      function rebuildCommand() {
+        const lines = $("urls").value
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean);
+        const parsed = lines.map(classify).filter(Boolean);
+
+        // parse feedback
+        const list = $("parse-list");
+        list.innerHTML = "";
+        parsed.forEach((p) => {
+          const li = document.createElement("li");
+          li.className = "parse-item";
+          const got =
+            p.kind === "video"
+              ? `id ${p.id}`
+              : p.kind === "bad"
+              ? "not a YouTube target"
+              : "expands on run";
+          li.innerHTML = `<span class="badge ${p.kind}">${badgeLabel(p.kind)}</span>
+            <span class="src">${escapeHtml(p.value)}</span>
+            <span class="got">${got}</span>`;
+          list.appendChild(li);
+        });
+
+        const valid = parsed.filter((p) => p.kind !== "bad");
+        const usesPlaylist = valid.some((p) => p.kind !== "video");
+
+        // build command
+        const parts = ["tubescribe"];
+        const fmt = $("fmt").value;
+        if (fmt !== "txt") parts.push("-f", fmt);
+        const lang = $("lang").value.trim();
+        if (lang && lang !== "en") parts.push("-l", lang);
+        const outdir = $("outdir").value.trim();
+        if (outdir) parts.push("-o", shQuote(outdir));
+        const limit = $("limit").value.trim();
+        if (limit) parts.push("-n", limit);
+        if ($("ts").checked && fmt === "txt") parts.push("-t");
+        if ($("skip").checked) parts.push("--skip-existing");
+
+        for (const p of valid) parts.push(shQuote(p.value));
+
+        const cmd =
+          valid.length === 0
+            ? "tubescribe  # add a video, playlist, or channel above"
+            : parts.join(" ");
+        $("cmd").innerHTML = highlightCmd(cmd);
+
+        // hint
+        const hint = $("cmd-hint");
+        if (usesPlaylist) {
+          hint.innerHTML =
+            'Playlist/channel expansion needs the extra: <code>pip install "tubescribe[playlists]"</code>';
+        } else if (valid.length) {
+          hint.innerHTML = 'Install once: <code>pip install tubescribe</code>';
+        } else {
+          hint.textContent = "";
+        }
+      }
+
+      function highlightCmd(cmd) {
+        // tokenize on spaces but keep quoted strings together
+        const tokens = cmd.match(/'[^']*'|\S+/g) || [];
+        return tokens
+          .map((t, i) => {
+            if (i === 0) return `<span class="tok-cmd">${escapeHtml(t)}</span>`;
+            if (t.startsWith("-")) return `<span class="tok-flag">${escapeHtml(t)}</span>`;
+            if (t.startsWith("'") || t.startsWith("http"))
+              return `<span class="tok-str">${escapeHtml(t)}</span>`;
+            return escapeHtml(t);
+          })
+          .join(" ");
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, (c) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+        );
+      }
+
+      getInputs.forEach((id) => {
+        const el = $(id);
+        el.addEventListener("input", rebuildCommand);
+        el.addEventListener("change", rebuildCommand);
+      });
+
+      $("copy-cmd").addEventListener("click", async () => {
+        const text = $("cmd").textContent;
+        await navigator.clipboard.writeText(text).catch(() => {});
+        const b = $("copy-cmd");
+        b.textContent = "Copied!";
+        setTimeout(() => (b.textContent = "Copy"), 1400);
+      });
+
+      // ===== CONVERT tab =====
+      const CONVERT_STEPS = ["Parsing JSON", "Reading segments", "Formatting", "Building file"];
+
+      function showSteps(steps) {
+        const box = $("progress");
+        box.classList.remove("hidden");
+        box.innerHTML = steps
+          .map(
+            (s, i) =>
+              `<div class="step" data-i="${i}"><span class="dot"></span><span>${s}</span></div>`
+          )
+          .join("");
+      }
+      function setStep(i) {
+        document.querySelectorAll("#progress .step").forEach((el) => {
+          const idx = Number(el.dataset.i);
+          el.classList.toggle("active", idx === i);
+          el.classList.toggle("done", idx < i);
+          if (idx < i)
+            el.querySelector(".dot").innerHTML =
+              '<svg viewBox="0 0 12 12" fill="currentColor"><path d="M10.28 2.28 4.5 8.06 1.72 5.28A.75.75 0 0 0 .66 6.34l3.31 3.31c.3.3.77.3 1.06 0l6.31-6.31a.75.75 0 1 0-1.06-1.06Z"/></svg>';
+        });
+      }
+
+      function parseSegments(text) {
+        const data = JSON.parse(text);
+        let segs;
+        if (Array.isArray(data)) segs = data;
+        else if (data && Array.isArray(data.segments)) segs = data.segments;
+        else throw new Error("Expected an array of segments or an object with a 'segments' array.");
+        const meta = Array.isArray(data) ? {} : data;
+        const norm = segs.map((s, i) => {
+          if (typeof s.text !== "string" || typeof s.start !== "number")
+            throw new Error(`Segment ${i + 1} is missing a 'text' or numeric 'start'.`);
+          return {
+            text: s.text,
+            start: Number(s.start),
+            duration: Number(s.duration ?? 0),
+          };
+        });
+        if (!norm.length) throw new Error("No segments found in the input.");
+        return { segs: norm, meta };
+      }
+
+      // ---- shared result helpers ----
+      function downloadFile(name, content) {
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+      }
+      function durStr(sec) {
+        return new Date((sec || 0) * 1000).toISOString().substr(11, 8);
+      }
+      function statsHtml(stats) {
+        return (
+          '<div class="stats-grid">' +
+          stats
+            .map(
+              (s) =>
+                `<div class="stat"><div class="label">${s.label}</div><div class="value">${s.value}</div></div>`
+            )
+            .join("") +
+          "</div>"
+        );
+      }
+      function showResults(title, sub) {
+        $("results-title").textContent = title;
+        $("results-sub").textContent = sub;
+        $("progress").classList.add("hidden");
+        $("entry").classList.add("hidden");
+        $("results").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+      }
+
+      // store fetched/converted contents for the delegated download/copy buttons
+      let store = {};
+
+      $("results-body").addEventListener("click", async (e) => {
+        const dl = e.target.closest("[data-dl]");
+        if (dl) {
+          const r = store[dl.dataset.dl];
+          if (r) downloadFile(r.filename, r.content);
+          return;
+        }
+        const cp = e.target.closest("[data-copy]");
+        if (cp) {
+          const r = store[cp.dataset.copy];
+          if (r) await navigator.clipboard.writeText(r.content).catch(() => {});
+          const old = cp.textContent;
+          cp.textContent = "Copied!";
+          setTimeout(() => (cp.textContent = old), 1400);
+          return;
+        }
+      });
+
+      $("reset-btn").addEventListener("click", () => {
+        $("results").classList.add("hidden");
+        $("entry").classList.remove("hidden");
+        $("progress").classList.add("hidden");
+        window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+      });
+
+      // ===== CONVERT handler =====
+      $("convert-btn").addEventListener("click", async () => {
+        const errBox = $("convert-error");
+        errBox.classList.add("hidden");
+        let parsed;
+        try {
+          parsed = parseSegments($("json-in").value);
+        } catch (e) {
+          errBox.textContent = "Couldn't parse: " + e.message;
+          errBox.classList.remove("hidden");
+          return;
+        }
+
+        const fmt = $("cfmt").value;
+        const withTs = $("cts").checked;
+
+        showSteps(CONVERT_STEPS);
+        for (let i = 0; i < CONVERT_STEPS.length; i++) {
+          setStep(i);
+          if (!reduceMotion) await sleep(200);
+        }
+        setStep(CONVERT_STEPS.length);
+
+        const { segs, meta } = parsed;
+        const out = render(segs, fmt, withTs);
+        const vid = meta.video_id || "transcript";
+        const filename = `${vid}.${fmt}`;
+        store = { [vid]: { filename, content: out } };
+
+        const totalSec = segs.length
+          ? segs[segs.length - 1].start + segs[segs.length - 1].duration
+          : 0;
+        const words = out.trim().split(/\s+/).filter(Boolean).length;
+
+        const body =
+          statsHtml([
+            { label: "Segments", value: segs.length.toLocaleString() },
+            { label: "Duration", value: durStr(totalSec) },
+            { label: "Words", value: words.toLocaleString() },
+            { label: "Format", value: fmt.toUpperCase() },
+          ]) +
+          `<div class="card vid-card">
+             <div class="vid-head">
+               <div><span class="badge video">${escapeHtml(filename)}</span></div>
+               <div class="vid-actions">
+                 <button class="btn btn-sm" data-copy="${escapeHtml(vid)}">Copy</button>
+                 <button class="btn btn-sm btn-primary" data-dl="${escapeHtml(vid)}">Download</button>
+               </div>
+             </div>
+             <pre class="output-pre vid-pre">${escapeHtml(out)}</pre>
+           </div>`;
+        $("results-body").innerHTML = body;
+        showResults("Converted transcript", (meta.language ? meta.language + " · " : "") + filename);
+      });
+
+      // ===== FETCH handler (calls the backend) =====
+      const FETCH_STEPS = ["Contacting backend", "Expanding sources", "Fetching transcripts", "Formatting"];
+
+      async function detectBackend() {
+        const el = $("backend-state");
+        try {
+          const res = await fetch("/api/health", { method: "GET" });
+          if (!res.ok) throw new Error();
+          await res.json();
+          el.className = "up";
+          el.innerHTML = '<span class="ind"></span> Backend connected';
+          return true;
+        } catch {
+          el.className = "down";
+          el.innerHTML =
+            '<span class="ind"></span> No backend — run <code>tubescribe-serve</code> to fetch live';
+          return false;
+        }
+      }
+
+      $("fetch-btn").addEventListener("click", async () => {
+        const lines = $("urls").value.split("\n").map((l) => l.trim()).filter(Boolean);
+        const valid = lines.map(classify).filter((p) => p && p.kind !== "bad");
+        if (!valid.length) {
+          $("backend-state").className = "down";
+          $("backend-state").innerHTML = "Add a valid video, playlist, or channel first.";
+          return;
+        }
+
+        const btn = $("fetch-btn");
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Fetching…';
+
+        showSteps(FETCH_STEPS);
+        setStep(0);
+
+        const payload = {
+          urls: valid.map((p) => p.value),
+          format: $("fmt").value,
+          languages: $("lang").value.trim() || "en",
+          timestamps: $("ts").checked,
+          limit: $("limit").value.trim() || null,
+        };
+
+        try {
+          setStep(1);
+          const res = await fetch("/api/transcript", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          setStep(2);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || `Server returned ${res.status}`);
+          }
+          const data = await res.json();
+          setStep(3);
+          if (!reduceMotion) await sleep(150);
+          renderFetch(data, payload.format);
+        } catch (e) {
+          $("progress").classList.add("hidden");
+          $("backend-state").className = "down";
+          $("backend-state").innerHTML =
+            "Fetch failed: " + escapeHtml(e.message) + " — is <code>tubescribe-serve</code> running?";
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = original;
+        }
+      });
+
+      function renderFetch(data, fmt) {
+        const results = data.results || [];
+        const errors = data.errors || [];
+        if (!results.length && errors.length) {
+          $("progress").classList.add("hidden");
+          $("backend-state").className = "down";
+          $("backend-state").textContent = errors[0].error;
+          return;
+        }
+
+        store = {};
+        results.forEach((r) => (store[r.video_id] = r));
+        const totalSegs = results.reduce((a, r) => a + r.segments, 0);
+
+        let body = statsHtml([
+          { label: "Videos", value: results.length.toLocaleString() },
+          { label: "Segments", value: totalSegs.toLocaleString() },
+          { label: "Format", value: fmt.toUpperCase() },
+          { label: "Errors", value: errors.length.toLocaleString() },
+        ]);
+
+        body += results
+          .map(
+            (r) => `<div class="card vid-card">
+              <div class="vid-head">
+                <div>
+                  <span class="badge video">${escapeHtml(r.video_id)}</span>
+                  <span class="vid-meta">${escapeHtml(r.language)}${r.is_generated ? " · auto" : ""} · ${r.segments} segs · ${durStr(r.duration)}</span>
+                </div>
+                <div class="vid-actions">
+                  <button class="btn btn-sm" data-copy="${escapeHtml(r.video_id)}">Copy</button>
+                  <button class="btn btn-sm btn-primary" data-dl="${escapeHtml(r.video_id)}">Download</button>
+                </div>
+              </div>
+              <pre class="output-pre vid-pre">${escapeHtml(r.content)}</pre>
+            </div>`
+          )
+          .join("");
+
+        if (errors.length) {
+          body +=
+            '<div class="card err-card"><div class="err-title">Couldn\'t fetch ' +
+            errors.length +
+            "</div>" +
+            errors
+              .map(
+                (e) =>
+                  `<div class="err-row"><span class="badge bad">error</span><span class="src">${escapeHtml(e.input)}</span><span class="got">${escapeHtml(e.error)}</span></div>`
+              )
+              .join("") +
+            "</div>";
+        }
+
+        $("results-body").innerHTML = body;
+        const sub =
+          `${results.length} transcript(s)` +
+          (errors.length ? ` · ${errors.length} error(s)` : "") +
+          (data.truncated ? " · capped at 100" : "");
+        showResults("Fetched transcripts", sub);
+      }
+
+      $("sample-btn").addEventListener("click", () => {
+        $("json-in").value = JSON.stringify(
+          {
+            video_id: "8jPQjjsBbIc",
+            language: "English",
+            language_code: "en",
+            is_generated: false,
+            segments: [
+              { text: "A few years ago, I broke into my own house.", start: 13.24, duration: 2.56 },
+              { text: "I had just driven home,", start: 16.88, duration: 1.216 },
+              { text: "it was around midnight in the dead of Montreal winter,", start: 18.43, duration: 2.7 },
+              { text: "I had been visiting my friend, Jeff, across town,", start: 21.2, duration: 2.4 },
+            ],
+          },
+          null,
+          2
+        );
+      });
+
+      // initial render
+      rebuildCommand();
+      $("entry-preview").classList.add("hidden");
+      detectBackend();
+    </script>
+  </body>
+</html>

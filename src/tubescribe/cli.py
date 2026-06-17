@@ -56,6 +56,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Skip videos whose output file already exists (requires --output-dir).",
     )
+    parser.add_argument(
+        "--proxy",
+        default=None,
+        metavar="URL",
+        help="Route requests through an http(s):// proxy (helps from blocked IPs).",
+    )
     return parser
 
 
@@ -69,7 +75,7 @@ def _fetch_and_write(video_id: str, args: argparse.Namespace) -> str:
             print(f"– {video_id} → exists, skipped", file=sys.stderr)
             return "skipped"
 
-    transcript = fetch_transcript(video_id, languages=languages)
+    transcript = fetch_transcript(video_id, languages=languages, proxy=args.proxy)
     rendered = render(transcript, args.format, with_timestamps=args.timestamps)
 
     if args.output_dir:
@@ -96,7 +102,7 @@ def main(argv: list[str] | None = None) -> int:
     for url in args.urls:
         try:
             collection = is_collection_url(url)
-            ids = resolve_video_ids(url, limit=args.limit)
+            ids = resolve_video_ids(url, limit=args.limit, proxy=args.proxy)
             if collection:
                 print(f"• {url} → {len(ids)} video(s)", file=sys.stderr)
             for vid in ids:

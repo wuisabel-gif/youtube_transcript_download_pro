@@ -59,7 +59,9 @@ def _collect_ids(info: object, out: list[str]) -> None:
             out.append(vid)
 
 
-def expand_collection(url: str, limit: int | None = None) -> list[str]:
+def expand_collection(
+    url: str, limit: int | None = None, proxy: str | None = None
+) -> list[str]:
     """Return the video ids contained in a playlist or channel URL."""
     try:
         import yt_dlp  # noqa: F401
@@ -81,6 +83,8 @@ def expand_collection(url: str, limit: int | None = None) -> list[str]:
     }
     if limit:
         opts["playlistend"] = limit
+    if proxy:
+        opts["proxy"] = proxy
 
     try:
         with YoutubeDL(opts) as ydl:
@@ -97,11 +101,13 @@ def expand_collection(url: str, limit: int | None = None) -> list[str]:
     return ids
 
 
-def resolve_video_ids(url: str, limit: int | None = None) -> list[str]:
+def resolve_video_ids(
+    url: str, limit: int | None = None, proxy: str | None = None
+) -> list[str]:
     """Resolve any supported URL/id into a list of video ids.
 
     Single videos return a one-element list; playlists and channels are expanded.
     """
     if is_collection_url(url):
-        return expand_collection(url, limit=limit)
+        return expand_collection(url, limit=limit, proxy=proxy)
     return [extract_video_id(url)]

@@ -33,7 +33,7 @@ def _parse_languages(value) -> list[str]:
     return ["en"]
 
 
-def create_app(web_dir: Path = WEB_DIR):
+def create_app(web_dir: Path = WEB_DIR, proxy: str | None = None):
     from flask import Flask, jsonify, request, send_from_directory
 
     app = Flask(__name__, static_folder=None)
@@ -88,7 +88,7 @@ def create_app(web_dir: Path = WEB_DIR):
         errors: list[dict] = []
         for url in urls:
             try:
-                for vid in resolve_video_ids(url, limit=limit):
+                for vid in resolve_video_ids(url, limit=limit, proxy=proxy):
                     if vid not in seen:
                         seen.add(vid)
                         video_ids.append(vid)
@@ -102,7 +102,7 @@ def create_app(web_dir: Path = WEB_DIR):
         results: list[dict] = []
         for vid in video_ids:
             try:
-                t = fetch_transcript(vid, languages=languages)
+                t = fetch_transcript(vid, languages=languages, proxy=proxy)
                 content = render(t, fmt, with_timestamps=timestamps)
                 duration = t.segments[-1].end if t.segments else 0.0
                 results.append(
@@ -136,10 +136,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--host", default="127.0.0.1", help="Bind host (default 127.0.0.1).")
     parser.add_argument("--port", type=int, default=8000, help="Bind port (default 8000).")
     parser.add_argument("--debug", action="store_true", help="Enable Flask debug mode.")
+    parser.add_argument(
+        "--proxy",
+        default=None,
+        metavar="URL",
+        help="Route YouTube requests through an http(s):// proxy (helps from blocked IPs).",
+    )
     args = parser.parse_args(argv)
 
     try:
-        app = create_app()
+        app = create_app(proxy=args.proxy)
     except ImportError:
         print(
             "Flask is required to run the server. Install it with:\n"

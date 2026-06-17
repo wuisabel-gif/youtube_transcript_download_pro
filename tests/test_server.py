@@ -9,7 +9,7 @@ from tubescribe.core import Segment, Transcript
 @pytest.fixture
 def client(monkeypatch):
     # Stub network-touching functions so the endpoint is tested in isolation.
-    def fake_resolve(url, limit=None):
+    def fake_resolve(url, limit=None, proxy=None):
         if "playlist" in url:
             return ["aaaaaaaaaaa", "bbbbbbbbbbb"][: (limit or 2)]
         if "bad" in url:
@@ -18,7 +18,7 @@ def client(monkeypatch):
             raise TubeScribeError("cannot resolve")
         return [url]
 
-    def fake_fetch(video_id, languages=("en",)):
+    def fake_fetch(video_id, languages=("en",), proxy=None):
         return Transcript(
             video_id=video_id,
             language="English",

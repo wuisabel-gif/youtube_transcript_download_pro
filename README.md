@@ -63,6 +63,11 @@ tubescribe "https://www.youtube.com/@SomeChannel" -n 25 -o out/ --skip-existing
 | `-t, --timestamps` | Prefix `txt` lines with `[HH:MM:SS]` |
 | `-n, --limit` | Cap videos pulled from each playlist/channel |
 | `--skip-existing` | Skip videos already downloaded (needs `--output-dir`) |
+| `--proxy` | Route requests through an `http(s)://` proxy |
+
+> **Blocked from a server/cloud IP?** YouTube rate-limits datacenter addresses.
+> Pass `--proxy http://user:pass@host:port` (CLI) or `tubescribe-serve --proxy …`
+> to route through a residential/proxy endpoint.
 
 ### Playlists and channels
 
@@ -95,6 +100,14 @@ Open the URL and you get two tabs:
 
 The page degrades gracefully: opened directly as a file (no backend), the live
 **Fetch** button is disabled and you still get the command builder and converter.
+
+### Deploying the page
+
+`web/index.html` is fully static, so it can be hosted on GitHub Pages. The
+included workflow (`.github/workflows/pages.yml`) publishes `web/` on every push
+to `main`; enable Pages → "GitHub Actions" in the repo settings. On Pages the
+converter and command builder work; live fetch needs a running `tubescribe-serve`
+backend (point the page at it, or run locally).
 
 ### API
 

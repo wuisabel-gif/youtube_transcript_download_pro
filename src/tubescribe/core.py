@@ -77,12 +77,16 @@ class Transcript:
 def fetch_transcript(
     video_id: str,
     languages: Iterable[str] = ("en",),
+    proxy: str | None = None,
 ) -> Transcript:
     """Fetch the best available transcript for a video.
 
     Prefers a manually created transcript in one of ``languages``, falling back
     to an auto-generated one, then to any available transcript that can be
     translated into the first requested language.
+
+    ``proxy`` is an optional ``http(s)://`` URL routed through for the request —
+    useful from cloud IPs that YouTube rate-limits or blocks.
     """
     # Imported lazily so ``--help`` and unit tests don't require the network dep.
     from youtube_transcript_api import YouTubeTranscriptApi
@@ -93,7 +97,14 @@ def fetch_transcript(
     )
 
     langs = list(languages) or ["en"]
-    api = YouTubeTranscriptApi()
+    if proxy:
+        from youtube_transcript_api.proxies import GenericProxyConfig
+
+        api = YouTubeTranscriptApi(
+            proxy_config=GenericProxyConfig(http_url=proxy, https_url=proxy)
+        )
+    else:
+        api = YouTubeTranscriptApi()
 
     try:
         listing = api.list(video_id)

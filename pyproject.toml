@@ -22,7 +22,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+playlists = ["yt-dlp>=2024.1.0"]
+dev = ["pytest>=7", "yt-dlp>=2024.1.0"]
 
 [project.scripts]
 tubescribe = "tubescribe.cli:main"

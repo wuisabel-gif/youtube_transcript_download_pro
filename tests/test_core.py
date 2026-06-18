@@ -17,6 +17,22 @@ def test_webshare_proxy_url():
     )
 
 
+def test_explain_maps_known_errors():
+    from tubescribe.core import _explain
+    from youtube_transcript_api._errors import (
+        IpBlocked,
+        TranscriptsDisabled,
+        VideoUnavailable,
+    )
+
+    # These exceptions take the video_id as their constructor arg.
+    assert "residential proxy" in _explain(IpBlocked("vid"))
+    assert "disabled" in _explain(TranscriptsDisabled("vid"))
+    assert "unavailable" in _explain(VideoUnavailable("vid"))
+    # Anything unrecognised gets the safe fallback, not a raised error.
+    assert "could not retrieve" in _explain(ValueError("boom")).lower()
+
+
 @pytest.mark.parametrize(
     "url,expected",
     [

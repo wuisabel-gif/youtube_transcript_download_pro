@@ -18,7 +18,7 @@ def client(monkeypatch):
             raise TubeScribeError("cannot resolve")
         return [url]
 
-    def fake_fetch(video_id, languages=("en",), proxy=None):
+    def fake_fetch(video_id, languages=("en",), proxy=None, webshare=None):
         return Transcript(
             video_id=video_id,
             language="English",
@@ -78,3 +78,27 @@ def test_empty_and_bad_format(client):
         client.post("/api/transcript", json={"urls": ["x"], "format": "pdf"}).status_code
         == 400
     )
+
+
+def test_webshare_creds_thread_through(monkeypatch):
+    captured = {}
+
+    def fake_resolve(url, limit=None, proxy=None):
+        captured["resolve_proxy"] = proxy
+        return ["12345678901"]
+
+    def fake_fetch(video_id, languages=("en",), proxy=None, webshare=None):
+        captured["fetch_webshare"] = webshare
+        return Transcript("12345678901", "English", "en", False, [Segment("hi", 0.0, 1.0)])
+
+    monkeypatch.setattr(server, "resolve_video_ids", fake_resolve)
+    monkeypatch.setattr(server, "fetch_transcript", fake_fetch)
+
+    app = server.create_app(webshare=("myuser", "mypass"))
+    app.testing = True
+    res = app.test_client().post("/api/transcript", json={"urls": ["12345678901"]})
+
+    assert res.status_code == 200
+    # Webshare creds reach fetch directly, and yt-dlp gets the rotating URL.
+    assert captured["fetch_webshare"] == ("myuser", "mypass")
+    assert captured["resolve_proxy"] == "http://myuser-rotate:mypass@p.webshare.io:80"

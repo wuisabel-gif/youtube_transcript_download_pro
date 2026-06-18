@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# Output
+out/
+*.srt
+*.vtt
+
+# OS
+.DS_Store
+
+# Local-only Claude Code settings (keep launch.json tracked)
+.claude/settings.local.json

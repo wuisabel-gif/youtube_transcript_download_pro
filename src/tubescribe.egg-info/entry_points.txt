@@ -1,3 +1,0 @@
-[console_scripts]
-tubescribe = tubescribe.cli:main
-tubescribe-serve = tubescribe.server:main

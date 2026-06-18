@@ -1,0 +1,24 @@
+# Render Blueprint — deploys TubeScribe as a single web service that serves
+# both the web UI and the /api backend.
+#
+# YouTube blocks datacenter IPs, so live fetch needs a RESIDENTIAL proxy. Set
+# your Webshare residential credentials in the Render dashboard (they are
+# declared below as secrets):
+#   WEBSHARE_PROXY_USERNAME / WEBSHARE_PROXY_PASSWORD
+# Or use a single generic proxy URL via TUBESCRIBE_PROXY.
+services:
+  - type: web
+    name: tubescribe
+    runtime: python
+    plan: free
+    buildCommand: pip install ".[server,playlists]"
+    startCommand: gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: WEBSHARE_PROXY_USERNAME
+        sync: false # set in dashboard (Webshare residential)
+      - key: WEBSHARE_PROXY_PASSWORD
+        sync: false # set in dashboard (Webshare residential)
+      - key: TUBESCRIBE_PROXY
+        sync: false # optional alternative: a generic http(s):// proxy URL

@@ -17,5 +17,5 @@ out/
 # OS
 .DS_Store
 
-# Local-only Claude Code settings (keep launch.json tracked)
-.claude/settings.local.json
+# Claude Code local editor config (not part of the project)
+.claude/

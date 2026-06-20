@@ -1,0 +1,264 @@
+name: "TubeScribe"
+philosophy: "A friendly developer utility. TubeScribe turns YouTube videos, playlists, and channels into clean transcript files — and the interface should feel like a helpful desk tool, not an enterprise console. The tension is handwritten warmth against monospace precision: a casual marker-style display face sits over a calm Inter body, with JetBrains Mono carrying every command, format, and file path. One YouTube-red signal color does all the pointing on cool-slate neutrals. Rounded, soft, pill-friendly — the same personality as the mascot."
+primary_mode: "light"
+brand_source: "Real product — TubeScribe / youtube_transcript_download_pro. Tokens derived from the shipped web app, logo, and mascot."
+brand_domain: "YouTube transcript downloading / caption archiving (CLI + web + browser extension)"
+brand_type: "ui-rich"
+mono_for_code: true       # commands, file paths, format names (txt/srt/vtt/json), video ids
+mono_for_metrics: false   # counts, durations, timestamps stay in the friendly sans
+
+# ── PRIMITIVES ──────────────────────────────────────────
+primitives:
+  colors:
+    neutral:              # cool slate — matches the shipped app's tinted light canvas + slate text
+      50:  "#F7F9FC"
+      100: "#EEF2F8"
+      200: "#DEE5EF"
+      300: "#C6D0DF"
+      400: "#93A0B5"
+      500: "#69748A"
+      600: "#4B5568"
+      700: "#38404E"
+      800: "#242A34"
+      900: "#151A21"
+      950: "#0C0F14"
+    brand:                # YouTube red — 500 keyed to the logo gradient end (#E3261D)
+      50:  "#FEF2F1"
+      100: "#FCDDDA"
+      200: "#F9BCB6"
+      300: "#F28C82"
+      400: "#EA5A4D"
+      500: "#E3261D"
+      600: "#C01B13"
+      700: "#9C160F"
+      800: "#76130E"
+      900: "#4F0E0A"
+      950: "#2C0705"
+    red:   { 50: "#FEF2F2", 500: "#DC2626", 900: "#7F1D1D" }
+    green: { 50: "#ECFDF5", 500: "#16A34A", 900: "#14532D" }
+    amber: { 50: "#FFFBEB", 500: "#D97706", 900: "#78350F" }
+  spacing: [0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 96]
+  radii:   [0, 6, 10, 14, 20, 999]   # rounded, pill-friendly; no sharp corners
+
+# ── SEMANTIC TOKENS ─────────────────────────────────────
+tokens:
+  colors:
+    light:
+      background:     "{neutral.50}"
+      surface1:       "{neutral.100}"
+      surface2:       "{neutral.200}"
+      surface3:       "{neutral.300}"
+      border:         "{neutral.200}"
+      border_visible: "{neutral.300}"
+      text1:          "{neutral.900}"
+      text2:          "{neutral.600}"
+      text3:          "{neutral.500}"
+      text4:          "{neutral.400}"
+      accent:         "{brand.500}"
+      accent_hover:   "{brand.600}"
+      accent_subtle:  "{brand.100}"
+    dark:
+      background:     "{neutral.950}"
+      surface1:       "{neutral.900}"
+      surface2:       "{neutral.800}"
+      surface3:       "{neutral.700}"
+      border:         "{neutral.800}"
+      border_visible: "{neutral.700}"
+      text1:          "{neutral.50}"
+      text2:          "{neutral.300}"
+      text3:          "{neutral.400}"
+      text4:          "{neutral.500}"
+      accent:         "{brand.400}"
+      accent_hover:   "{brand.300}"
+      accent_subtle:  "{brand.900}"
+    success: "{green.500}"
+    warning: "{amber.500}"
+    error:   "{red.500}"
+    success_bg: { light: "{green.50}", dark: "{green.900}" }
+    warning_bg: { light: "{amber.50}", dark: "{amber.900}" }
+    error_bg:   { light: "{red.50}",   dark: "{red.900}" }
+
+  spacing:
+    2xs: 2
+    xs: 4
+    sm: 8
+    md: 16
+    lg: 24
+    xl: 32
+    2xl: 48
+    3xl: 64
+    4xl: 96
+
+  radii:
+    element:   6     # checkboxes, small controls
+    control:   10    # buttons, inputs, toggles
+    component: 14    # cards, list items, panels
+    container: 20    # modals, sheets
+    pill:      999   # tags, chips, badges, pill buttons
+
+  typography:
+    display:
+      family: "Shantell Sans"     # observed brand uses a custom marker face (ALK Life); Shantell Sans is the free best-match
+      size:   "56px"
+      weight: 600
+      line_height: 1.05
+      letter_spacing: "-0.01em"
+      google_fonts: "Shantell+Sans:ital,wght@0,500;0,600;0,700;1,600"
+    heading:
+      family: "Shantell Sans"
+      size:   "30px"
+      weight: 600
+      line_height: 1.15
+      letter_spacing: "-0.01em"
+    body:
+      family: "Inter"
+      size:   "16px"
+      weight: 400
+      line_height: 1.6
+      letter_spacing: "0em"
+      google_fonts: "Inter:wght@400;500;600;700"
+    mono:
+      family: "JetBrains Mono"
+      size:   "13px"
+      weight: 500
+      google_fonts: "JetBrains+Mono:wght@400;500;600"
+      usage: "commands, file paths, format names (txt/srt/vtt/json), video ids, code blocks"
+
+  elevation:
+    strategy: "subtle"
+    shadow_1_light: "0 1px 2px rgba(12,15,20,0.06), 0 1px 3px rgba(12,15,20,0.04)"
+    shadow_2_light: "0 4px 12px rgba(12,15,20,0.08), 0 2px 4px rgba(12,15,20,0.04)"
+    shadow_3_light: "0 16px 40px rgba(12,15,20,0.16), 0 4px 12px rgba(12,15,20,0.08)"
+    shadow_1_dark:  "0 1px 2px rgba(0,0,0,0.5)"
+    shadow_2_dark:  "0 6px 18px rgba(0,0,0,0.55)"
+    shadow_3_dark:  "0 20px 48px rgba(0,0,0,0.65)"
+
+  motion:
+    personality: "smooth-with-a-bounce"   # calm by default; one playful spring on press/appear
+    easing_micro:    "cubic-bezier(0.2, 0, 0, 1)"
+    easing_standard: "cubic-bezier(0.4, 0, 0.2, 1)"
+    easing_emphasis: "cubic-bezier(0.34, 1.4, 0.64, 1)"  # slight overshoot — the mascot's friendliness
+    duration_fast:   "140ms"
+    duration_normal: "240ms"
+    duration_slow:   "360ms"
+
+  # ── HERO STAGE ── soft red-tinted gradient field with the mascot as the hero subject
+  hero_stage:
+    preset: null
+    observed_style:
+      description: "The shipped hero is a soft red-tinted radial gradient on a cool light canvas, overlaid with a faint connect-the-dots constellation, with the friendly red play-button mascot holding a transcript scroll standing in front. The mascot IS the focal point."
+      where_used: ["hero", "empty states"]
+    background:
+      medium: "gradient"                 # soft radial wash; faint dot-constellation rendered as a pattern overlay
+      color_mode: "brand-tinted-neutral"
+      saturation: "muted"
+      light_source: "top"
+      falloff: "radial"
+      vignette: "off"
+      texture: "clean"
+      motion: "static"
+      intensity: "subtle"
+      safe_zone: "masked-for-text"
+      color_palette: ["#FBCFCA", "#FEF2F1", "#F7F9FC", "#EEF2F8", "#E3261D"]
+    hero:
+      subject: "photo-cutout"            # the TubeScribe mascot — drop assets/mascot.png into the slot
+      placement: "center"
+      scale: "medium"
+      tint: "none"
+    relation:
+      type: "flat"
+      bleed: 0
+    disclaimer: "Previews render a labeled placeholder for the mascot. Drop in assets/mascot.png (the real character) before shipping — it is the brand's own asset, not redistributed inside this skill."
+
+  # ── ICONOGRAPHY ── brand reality + free fallback
+  iconography:
+    observed_style:
+      description: "The shipped app uses Heroicons (solid for chips/badges, the brand mark is the Heroicons paper-airplane). Geometric, ~1.5px effective weight, rounded corners, balanced density, friendly."
+      stroke_weight: "regular"
+      corner_treatment: "soft"
+      fill_style: "mixed"        # solid chips + outline UI icons
+      form_language: "geometric"
+      visual_density: "balanced"
+    fallback_kit:
+      name: "Phosphor"
+      weight: "regular"
+      match_score: "high"
+      match_reasoning: "Phosphor regular matches the observed ~1.5px weight, rounded corners, and geometric-but-friendly form language, and its bold/fill variants cover the solid chip icons too. Lucide was the runner-up but reads slightly more clinical than TubeScribe's rounded warmth."
+      cdn: "https://unpkg.com/@phosphor-icons/web@2/src/regular/style.css"
+      icon_class_prefix: "ph ph-"
+    disclaimer: "Icons in the previews are a best-match fallback from the Phosphor kit. The shipped app uses Heroicons (MIT) — swap to Heroicons for an exact match."
+
+components:
+  button_primary:
+    source: "observed"
+    background: "{accent}"
+    color: "#FFFFFF"
+    padding: "10px 18px"
+    radius: "{radii.control}"
+    font: "body 15px / weight 600"
+    hover: { background: "{accent_hover}" }
+  button_secondary:
+    source: "observed"
+    background: "{surface1}"
+    color: "{accent}"
+    border: "1px solid {border_visible}"
+    padding: "10px 18px"
+    radius: "{radii.control}"
+    hover: { border_color: "{accent}", color: "{accent}" }
+  button_ghost:
+    source: "derived"
+    background: "transparent"
+    color: "{text2}"
+    padding: "8px 12px"
+    radius: "{radii.control}"
+    justified_by: "Tertiary actions need a third weight below secondary; flat text+hover-tint follows the subtle-elevation rule."
+    hover: { background: "{surface2}", color: "{text1}" }
+  input:
+    source: "observed"
+    background: "{surface1}"
+    border: "1px solid {border_visible}"
+    radius: "{radii.control}"
+    padding: "11px 13px"
+    focus: { border_color: "{accent}", ring: "3px {accent} @ 18% alpha" }
+  card:
+    source: "observed"
+    background: "{surface1}"
+    border: "1px solid {border}"
+    radius: "{radii.component}"
+    shadow: "elevation 1"
+    padding: "{spacing.lg}"
+  tag:
+    source: "observed"
+    background: "{accent_subtle}"
+    color: "{accent}"
+    radius: "{radii.pill}"
+    padding: "3px 10px"
+    font: "label"
+  toggle:
+    source: "derived"
+    track_on: "{accent}"
+    track_off: "{surface3}"
+    thumb: "#FFFFFF"
+    radius: "{radii.pill}"
+    justified_by: "No toggle in the shipped app; pill track + round thumb matches the rounded radii philosophy and accent-as-on convention."
+  command_preview:
+    source: "observed"
+    background: "{surface2}"     # dark inset in dark mode
+    color: "{text1}"
+    font: "mono"
+    radius: "{radii.component}"
+    note: "The signature surface — the live-built CLI command. Mono, copy button, accent on the binary name."
+
+app_screen:
+  archetype: "list-detail"
+  frame: "browser"
+  frame_params:
+    url: "tubescribe.app/library"
+    title: "TubeScribe — Library"
+  content_seed: "a batch fetched from a creator's playlist — left list of videos with status, right pane showing one selected transcript with segments"
+  required_tokens_checklist:
+    - "background, surface1, surface2, surface3, border, border_visible"
+    - "text1, text2, text3, text4"
+    - "accent, accent_subtle, success, warning, error"
+    - "all typography scale tokens (display heading subheading body body-sm caption label)"
+    - "all spacing tokens used in components"

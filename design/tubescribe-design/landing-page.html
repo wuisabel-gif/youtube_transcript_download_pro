@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TubeScribe - Paste a link. Get the words.</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,500;0,600;0,700;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2/src/regular/style.css">
+
+<style>
+  :root {
+    /* color - light (primary mode) */
+    --background: #F7F9FC;
+    --bg: var(--background);
+    --surface1: #EEF2F8;
+    --surface2: #DEE5EF;
+    --surface3: #C6D0DF;
+    --border: #DEE5EF;
+    --border-visible: #C6D0DF;
+    --text1: #151A21;
+    --text2: #4B5568;
+    --text3: #69748A;
+    --text4: #93A0B5;
+    --accent: #E3261D;
+    --accent-hover: #C01B13;
+    --accent-subtle: #FCDDDA;
+    --success: #16A34A;
+    --warning: #D97706;
+    --error: #DC2626;
+    --success-bg: #ECFDF5;
+    --warning-bg: #FFFBEB;
+    --error-bg: #FEF2F2;
+
+    /* type families */
+    --font-display: "Shantell Sans", "Comic Sans MS", cursive;
+    --font-body: "Inter", -apple-system, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+    /* type scale */
+    --text-display: 56px;
+    --text-heading: 30px;
+    --text-subheading: 19px;
+    --text-body: 16px;
+    --text-body-sm: 14px;
+    --text-caption: 13px;
+    --text-label: 11px;
+
+    /* spacing (8px base) */
+    --space-2xs: 2px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+    --space-4xl: 96px;
+
+    /* radii */
+    --radius-element: 6px;
+    --radius-control: 10px;
+    --radius-component: 14px;
+    --radius-container: 20px;
+    --radius-pill: 999px;
+
+    /* elevation */
+    --shadow-1: 0 1px 2px rgba(12,15,20,0.06), 0 1px 3px rgba(12,15,20,0.04);
+    --shadow-2: 0 4px 12px rgba(12,15,20,0.08), 0 2px 4px rgba(12,15,20,0.04);
+    --shadow-3: 0 16px 40px rgba(12,15,20,0.16), 0 4px 12px rgba(12,15,20,0.08);
+
+    /* motion */
+    --ease-micro: cubic-bezier(0.2, 0, 0, 1);
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-emphasis: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --dur-fast: 140ms;
+    --dur-normal: 240ms;
+    --dur-slow: 360ms;
+  }
+
+  [data-theme="dark"] {
+    --background: #0C0F14;
+    --bg: var(--background);
+    --surface1: #151A21;
+    --surface2: #242A34;
+    --surface3: #38404E;
+    --border: #242A34;
+    --border-visible: #38404E;
+    --text1: #F7F9FC;
+    --text2: #C6D0DF;
+    --text3: #93A0B5;
+    --text4: #69748A;
+    --accent: #EA5A4D;
+    --accent-hover: #F28C82;
+    --accent-subtle: #4F0E0A;
+    --success: #16A34A;
+    --warning: #D97706;
+    --error: #DC2626;
+    --success-bg: #14532D;
+    --warning-bg: #78350F;
+    --error-bg: #7F1D1D;
+
+    --shadow-1: 0 1px 2px rgba(0,0,0,0.5);
+    --shadow-2: 0 6px 18px rgba(0,0,0,0.55);
+    --shadow-3: 0 20px 48px rgba(0,0,0,0.65);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text1);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background var(--dur-slow) var(--ease-standard), color var(--dur-slow) var(--ease-standard);
+  }
+  a { color: inherit; text-decoration: none; }
+  p { margin: 0; }
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 var(--space-2xl);
+  }
+
+  /* ── HEADER ── */
+  .lp-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-bottom: 1px solid var(--border);
+  }
+  .lp-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+  }
+  .lp-brand {
+    display: inline-flex; align-items: center; gap: var(--space-sm);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--text1);
+  }
+  .lp-brand-mark {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(155deg, #F28C82, var(--accent));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), var(--shadow-1);
+    position: relative;
+    flex: none;
+  }
+  .lp-brand-mark::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 54%;
+    transform: translate(-50%, -50%);
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 5px 0 5px 8px;
+    border-color: transparent transparent transparent #FFFFFF;
+  }
+  .lp-nav { display: flex; gap: var(--space-xl); }
+  .lp-nav a {
+    color: var(--text2);
+    font-size: var(--text-body-sm); font-weight: 500;
+    transition: color var(--dur-normal) var(--ease-standard);
+  }
+  .lp-nav a:hover { color: var(--text1); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--space-sm);
+    padding: 10px 18px;
+    border-radius: var(--radius-control);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease-emphasis), background var(--dur-normal) var(--ease-standard), border-color var(--dur-normal) var(--ease-standard), color var(--dur-normal) var(--ease-standard);
+    line-height: 1;
+  }
+  .btn i { font-size: 17px; }
+  .btn-primary {
+    background: var(--accent);
+    color: #FFFFFF;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: var(--surface1);
+    color: var(--accent);
+    border-color: var(--border-visible);
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-sm {
+    padding: 8px 14px;
+    font-size: var(--text-body-sm);
+  }
+  .btn-lg {
+    padding: 14px 24px;
+    font-size: 17px;
+  }
+
+  /* ── HERO STAGE ──
+     medium: gradient (soft red-tinted radial wash)
+     subject: photo-cutout (mascot placeholder)
+     relation: flat */
+  .lp-hero {
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-4xl) 0 var(--space-4xl);
+    background: var(--bg);
+  }
+  /* Layer 1 - soft red-tinted radial field */
+  .bg-field {
+    position: absolute; inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 22%,
+        rgba(251, 207, 202, 0.85) 0%,
+        rgba(254, 242, 241, 0.45) 42%,
+        rgba(247, 249, 252, 0.00) 78%),
+      radial-gradient(ellipse 40% 40% at 78% 12%,
+        rgba(227, 38, 29, 0.10) 0%,
+        rgba(227, 38, 29, 0.00) 70%);
+  }
+  [data-theme="dark"] .bg-field {
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 22%,
+        rgba(234, 90, 77, 0.22) 0%,
+        rgba(79, 14, 10, 0.30) 42%,
+        rgba(12, 15, 20, 0.00) 78%),
+      radial-gradient(ellipse 40% 40% at 78% 12%,
+        rgba(234, 90, 77, 0.16) 0%,
+        rgba(12, 15, 20, 0.00) 70%);
+  }
+  /* Layer 1b - faint dot constellation */
+  .bg-dots {
+    position: absolute; inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-image: radial-gradient(circle, var(--border-visible) 1.1px, transparent 1.4px);
+    background-size: 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 35%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 35%, #000 0%, transparent 72%);
+    opacity: 0.5;
+  }
+  [data-theme="dark"] .bg-dots { opacity: 0.35; }
+
+  .hero-content-wrap {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: var(--space-3xl);
+    align-items: center;
+  }
+  .hero-copy { display: block; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: var(--space-sm);
+    background: var(--accent-subtle);
+    color: var(--accent);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    padding: 5px 12px 5px 10px;
+    border-radius: var(--radius-pill);
+    margin-bottom: var(--space-lg);
+  }
+  .hero-badge i { font-size: 15px; }
+  .hero-copy h1 {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 7vw, 72px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--space-lg);
+    color: var(--text1);
+  }
+  .hero-copy h1 .mark { color: var(--accent); }
+  .hero-copy p.sub {
+    font-size: var(--text-subheading);
+    line-height: 1.55;
+    color: var(--text2);
+    max-width: 480px;
+    margin: 0 0 var(--space-2xl);
+  }
+  .hero-ctas {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .hero-footnote {
+    margin-top: var(--space-lg);
+    font-size: var(--text-caption);
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+  .hero-footnote span {
+    display: inline-flex; align-items: center; gap: var(--space-xs);
+  }
+  .hero-footnote i { color: var(--success); font-size: 15px; }
+
+  /* hero visual - mascot placeholder */
+  .hero-visual { display: block; }
+  .mascot-slot {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-container);
+    border: 2px dashed var(--border-visible);
+    background: color-mix(in srgb, var(--surface1) 55%, transparent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    text-align: center;
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-2);
+  }
+  .mascot-glyph {
+    width: 96px; height: 96px;
+    border-radius: var(--radius-container);
+    background: linear-gradient(155deg, #F28C82, var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-2), inset 0 2px 0 rgba(255,255,255,0.4);
+    position: relative;
+  }
+  .mascot-glyph::after {
+    content: "";
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 18px 0 18px 30px;
+    border-color: transparent transparent transparent #FFFFFF;
+    margin-left: 6px;
+  }
+  .mascot-caption {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text3);
+    line-height: 1.5;
+  }
+  .mascot-caption strong { color: var(--text2); font-weight: 600; }
+
+  /* ── SECTION INTRO ── */
+  .lp-intro {
+    padding: var(--space-4xl) 0 var(--space-2xl);
+    text-align: center;
+  }
+  .intro-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: var(--space-md);
+    font-weight: 600;
+  }
+  .intro-heading {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 36px);
+    font-weight: 600;
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    margin: 0 auto var(--space-md);
+    max-width: 720px;
+    color: var(--text1);
+  }
+  .intro-heading .mark { color: var(--accent); }
+  .intro-body {
+    font-size: var(--text-subheading);
+    line-height: 1.6;
+    color: var(--text2);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── FEATURE ROWS ── */
+  .lp-feature {
+    padding: var(--space-4xl) 0;
+  }
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4xl);
+    align-items: center;
+  }
+  .feature-row.reverse {
+    direction: rtl;
+  }
+  .feature-row.reverse > * {
+    direction: ltr;
+  }
+  .feature-copy { display: block; }
+  .feature-copy .kicker {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: var(--space-md);
+  }
+  .feature-copy h3 {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--space-md);
+    color: var(--text1);
+  }
+  .feature-copy h3 .mark { color: var(--accent); }
+  .feature-copy p {
+    font-size: var(--text-body);
+    line-height: 1.65;
+    color: var(--text2);
+    max-width: 440px;
+    margin-bottom: var(--space-lg);
+  }
+  .feature-copy .note {
+    font-size: var(--text-caption);
+    color: var(--text3);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .feature-copy .note i { color: var(--accent); font-size: 16px; }
+
+  .feature-visual {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-container);
+    background: var(--surface1);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-2);
+  }
+
+  /* feature 1 - command preview card */
+  .cmd-card { display: block; }
+  .cmd-head {
+    display: flex; align-items: center; gap: var(--space-sm);
+    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border);
+  }
+  .cmd-dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--surface3);
+  }
+  .cmd-dot.r { background: var(--accent); }
+  .cmd-title {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text3);
+  }
+  .cmd-body {
+    background: var(--surface2);
+    border-radius: var(--radius-component);
+    padding: var(--space-md);
+    font-family: var(--font-mono);
+    font-size: var(--text-body-sm);
+    line-height: 1.9;
+    color: var(--text1);
+    overflow-x: auto;
+  }
+  .cmd-line { white-space: pre; }
+  .cmd-prompt { color: var(--text4); }
+  .cmd-bin { color: var(--accent); font-weight: 600; }
+  .cmd-flag { color: var(--text3); }
+  .cmd-out { color: var(--text2); }
+  .cmd-ok { color: var(--success); }
+  .cmd-copy {
+    display: inline-flex; align-items: center; gap: var(--space-xs);
+    margin-top: var(--space-md);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .cmd-copy i { font-size: 15px; }
+
+  /* feature 2 - formats chip row */
+  .formats-card { display: block; }
+  .formats-head {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text3);
+    margin-bottom: var(--space-md);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .formats-row {
+    display: flex; flex-wrap: wrap; gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  .fmt-chip {
+    display: inline-flex; align-items: center; gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: var(--text-body-sm);
+    font-weight: 600;
+    padding: 7px 13px;
+    border-radius: var(--radius-pill);
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    transition: all var(--dur-normal) var(--ease-emphasis);
+  }
+  .fmt-chip i { font-size: 15px; }
+  .fmt-chip.active {
+    background: var(--accent-subtle);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .lang-row {
+    display: flex; flex-wrap: wrap; gap: var(--space-xs);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border);
+  }
+  .lang-tag {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--surface2);
+    color: var(--text3);
+  }
+  .lang-tag.any { background: var(--accent-subtle); color: var(--accent); font-weight: 600; }
+
+  /* feature 3 - playlist / bulk list */
+  .bulk-card { display: block; }
+  .bulk-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding-bottom: var(--space-md);
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border);
+  }
+  .bulk-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text1);
+  }
+  .bulk-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text3);
+  }
+  .bulk-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .bulk-item {
+    display: flex; align-items: center; gap: var(--space-md);
+    padding: var(--space-sm) 0;
+  }
+  .bulk-thumb {
+    width: 44px; height: 30px; flex: none;
+    border-radius: var(--radius-element);
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text4);
+  }
+  .bulk-thumb i { font-size: 15px; }
+  .bulk-name {
+    flex: 1;
+    font-size: var(--text-body-sm);
+    color: var(--text1);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bulk-status {
+    display: inline-flex; align-items: center; gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-weight: 500;
+  }
+  .bulk-status.done { color: var(--success); }
+  .bulk-status.run { color: var(--accent); }
+  .bulk-status.wait { color: var(--text4); }
+  .bulk-status i { font-size: 14px; }
+  .bulk-foot {
+    display: flex; align-items: center; gap: var(--space-md);
+    padding-top: var(--space-md);
+    margin-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+  .bulk-bar {
+    flex: 1; height: 8px;
+    background: var(--surface2);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .bulk-bar > span {
+    display: block; height: 100%;
+    width: 64%;
+    background: linear-gradient(90deg, #F28C82, var(--accent));
+    border-radius: var(--radius-pill);
+  }
+  .bulk-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  /* ── PULL QUOTE ── */
+  .lp-quote { padding: var(--space-4xl) 0; }
+  .lp-quote blockquote {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3.2vw, 34px);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--text1);
+  }
+  .lp-quote blockquote .mark { color: var(--accent); }
+  .lp-quote cite {
+    display: block;
+    margin-top: var(--space-lg);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-style: normal;
+    color: var(--text3);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── FINAL CTA ── */
+  .lp-cta-block {
+    padding: var(--space-4xl) 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .lp-cta-block::before {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 90%; height: 220%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse 50% 40% at 50% 50%,
+      rgba(251, 207, 202, 0.55) 0%,
+      rgba(254, 242, 241, 0.00) 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  [data-theme="dark"] .lp-cta-block::before {
+    background: radial-gradient(ellipse 50% 40% at 50% 50%,
+      rgba(79, 14, 10, 0.45) 0%,
+      rgba(12, 15, 20, 0.00) 70%);
+  }
+  .lp-cta-block .container {
+    position: relative; z-index: 1;
+    max-width: 640px;
+  }
+  .lp-cta-block h2 {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.4vw, 48px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--space-md);
+    color: var(--text1);
+  }
+  .lp-cta-block h2 .mark { color: var(--accent); }
+  .lp-cta-block p {
+    font-size: var(--text-subheading);
+    color: var(--text2);
+    margin: 0 auto var(--space-xl);
+    max-width: 480px;
+  }
+  .lp-cta-block .hero-ctas { justify-content: center; }
+  .cta-sub {
+    margin-top: var(--space-lg);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--text3);
+  }
+
+  /* ── FOOTER ── */
+  .lp-footer {
+    border-top: 1px solid var(--border);
+    padding: var(--space-3xl) 0 var(--space-2xl);
+  }
+  .lp-footer .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-xl);
+  }
+  .footer-brand-block { max-width: 320px; }
+  .footer-brand {
+    display: inline-flex; align-items: center; gap: var(--space-sm);
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text1);
+    letter-spacing: -0.01em;
+  }
+  .footer-tag {
+    font-size: var(--text-body-sm);
+    color: var(--text3);
+    margin-top: var(--space-sm);
+    line-height: 1.55;
+  }
+  .footer-nav {
+    display: flex;
+    gap: var(--space-2xl);
+  }
+  .footer-col { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .footer-col-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text4);
+    margin-bottom: var(--space-xs);
+  }
+  .footer-nav a {
+    font-size: var(--text-body-sm);
+    color: var(--text2);
+    transition: color var(--dur-normal) var(--ease-standard);
+  }
+  .footer-nav a:hover { color: var(--accent); }
+  .footer-bottom {
+    max-width: 1120px;
+    margin: var(--space-2xl) auto 0;
+    padding: var(--space-lg) var(--space-2xl) 0;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption); color: var(--text4);
+  }
+
+  /* ── THEME TOGGLE BAR ── */
+  .theme-bar {
+    position: fixed;
+    bottom: var(--space-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: color-mix(in srgb, var(--surface1) 88%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid var(--border-visible);
+    border-radius: var(--radius-pill);
+    z-index: 1000;
+    box-shadow: var(--shadow-2);
+  }
+  .theme-bar button {
+    padding: 8px 18px;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all var(--dur-normal) var(--ease-standard);
+  }
+  .theme-bar button.active {
+    background: var(--accent);
+    color: #FFFFFF;
+  }
+
+  @media (max-width: 880px) {
+    .container { padding: 0 var(--space-lg); }
+    .hero-grid { grid-template-columns: 1fr; gap: var(--space-2xl); }
+    .hero-visual { max-width: 360px; margin: 0 auto; }
+    .feature-row { grid-template-columns: 1fr; gap: var(--space-xl); }
+    .feature-row.reverse { direction: ltr; }
+    .lp-nav { display: none; }
+    .footer-nav { gap: var(--space-xl); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="lp-header">
+  <div class="container">
+    <a href="#" onclick="return false" class="lp-brand">
+      <span class="lp-brand-mark"></span>
+      TubeScribe
+    </a>
+    <nav class="lp-nav">
+      <a href="#" onclick="return false">Features</a>
+      <a href="#" onclick="return false">CLI</a>
+      <a href="#" onclick="return false">Extension</a>
+      <a href="#" onclick="return false">GitHub</a>
+    </nav>
+    <a href="#" onclick="return false" class="btn btn-primary btn-sm"><i class="ph ph-plus-circle"></i> Add to Chrome</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── HERO ── -->
+  <section class="lp-hero">
+    <div class="bg-field"></div>
+    <div class="bg-dots"></div>
+    <div class="container">
+      <div class="hero-content-wrap">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <span class="hero-badge"><i class="ph ph-lock-simple-open"></i> Local-first, no API key</span>
+            <h1>Paste a link. <span class="mark">Get the words.</span></h1>
+            <p class="sub">
+              TubeScribe pulls clean transcripts out of YouTube videos, playlists, and whole channels, then hands them back as txt, srt, vtt, or json. It runs right in your browser. Nothing to sign up for.
+            </p>
+            <div class="hero-ctas">
+              <a href="#" onclick="return false" class="btn btn-primary btn-lg"><i class="ph ph-plus-circle"></i> Add to Chrome</a>
+              <a href="#" onclick="return false" class="btn btn-secondary btn-lg"><i class="ph ph-terminal-window"></i> Get the CLI</a>
+            </div>
+            <div class="hero-footnote">
+              <span><i class="ph ph-check-circle"></i> Free &amp; open source</span>
+              <span><i class="ph ph-check-circle"></i> Runs in your browser</span>
+              <span><i class="ph ph-check-circle"></i> Any ISO language</span>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="mascot-slot">
+              <div class="mascot-glyph"></div>
+              <div class="mascot-caption">
+                <strong>TubeScribe mascot</strong><br>
+                (drop in assets/mascot.png)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INTRO ── -->
+  <section class="lp-intro">
+    <div class="container">
+      <div class="intro-eyebrow">What it is</div>
+      <h2 class="intro-heading">A friendly desk tool for turning videos into <span class="mark">readable, searchable text.</span></h2>
+      <p class="intro-body">
+        Three ways to use it, one job to do. A command-line tool for scripts and servers, a web app for quick one-offs, and a Chrome extension for the video you are watching right now. Same engine, same clean output, no accounts in sight.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── FEATURE 1 - text left, visual right ── -->
+  <section class="lp-feature">
+    <div class="container">
+      <div class="feature-row">
+        <div class="feature-copy">
+          <div class="kicker">The CLI</div>
+          <h3>One command, <span class="mark">one tidy file.</span></h3>
+          <p>
+            Point TubeScribe at a URL and pick a format. It fetches the captions, cleans up the timing, and writes the file next to you. Pipe it, cron it, drop it in a Makefile. It behaves like the rest of your toolbox.
+          </p>
+          <div class="note"><i class="ph ph-terminal-window"></i> No API key, no quota, no login dance</div>
+        </div>
+
+        <div class="feature-visual">
+          <div class="cmd-card">
+            <div class="cmd-head">
+              <span class="cmd-dot r"></span>
+              <span class="cmd-dot"></span>
+              <span class="cmd-dot"></span>
+              <span class="cmd-title">~/transcripts</span>
+            </div>
+            <div class="cmd-body">
+<div class="cmd-line"><span class="cmd-prompt">$ </span><span class="cmd-bin">tubescribe</span> get https://youtu.be/dQw4w9WgXcQ <span class="cmd-flag">--format srt</span></div>
+<div class="cmd-line"><span class="cmd-out">  resolving video... ok</span></div>
+<div class="cmd-line"><span class="cmd-out">  captions: en (auto)  362 segments</span></div>
+<div class="cmd-line"><span class="cmd-ok">  saved -> never-gonna.srt</span></div>
+            </div>
+            <span class="cmd-copy"><i class="ph ph-copy"></i> Copy command</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURE 2 - text right, visual left ── -->
+  <section class="lp-feature">
+    <div class="container">
+      <div class="feature-row reverse">
+        <div class="feature-copy">
+          <div class="kicker">Formats &amp; languages</div>
+          <h3>txt, srt, vtt, json. <span class="mark">Your call.</span></h3>
+          <p>
+            Want plain reading text? Use txt. Subtitles for an editor? srt or vtt. Feeding another program? json with every timestamp intact. Pick a track in any ISO language the video offers, and TubeScribe writes it out exactly that way.
+          </p>
+          <div class="note"><i class="ph ph-translate"></i> If the video has the language, you can have the file</div>
+        </div>
+
+        <div class="feature-visual">
+          <div class="formats-card">
+            <div class="formats-head">Output format</div>
+            <div class="formats-row">
+              <span class="fmt-chip active"><i class="ph ph-file-text"></i> txt</span>
+              <span class="fmt-chip"><i class="ph ph-closed-captioning"></i> srt</span>
+              <span class="fmt-chip"><i class="ph ph-closed-captioning"></i> vtt</span>
+              <span class="fmt-chip"><i class="ph ph-brackets-curly"></i> json</span>
+            </div>
+            <div class="formats-head">Caption language</div>
+            <div class="lang-row">
+              <span class="lang-tag any">any</span>
+              <span class="lang-tag">en</span>
+              <span class="lang-tag">es</span>
+              <span class="lang-tag">fr</span>
+              <span class="lang-tag">de</span>
+              <span class="lang-tag">pt</span>
+              <span class="lang-tag">ja</span>
+              <span class="lang-tag">ko</span>
+              <span class="lang-tag">hi</span>
+              <span class="lang-tag">ar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURE 3 - text left, visual right ── -->
+  <section class="lp-feature">
+    <div class="container">
+      <div class="feature-row">
+        <div class="feature-copy">
+          <div class="kicker">Bulk download</div>
+          <h3>Grab the whole channel <span class="mark">while you make coffee.</span></h3>
+          <p>
+            Hand TubeScribe a playlist or a channel and it works straight down the list, one transcript after another, skipping the ones with no captions. Come back to a folder full of files and a job already done.
+          </p>
+          <div class="note"><i class="ph ph-stack"></i> Playlists and channels, queued and saved in order</div>
+        </div>
+
+        <div class="feature-visual">
+          <div class="bulk-card">
+            <div class="bulk-head">
+              <span class="bulk-title">Cooking Basics</span>
+              <span class="bulk-meta">playlist &middot; 41 videos</span>
+            </div>
+            <div class="bulk-list">
+              <div class="bulk-item">
+                <span class="bulk-thumb"><i class="ph ph-play"></i></span>
+                <span class="bulk-name">How to hold a knife</span>
+                <span class="bulk-status done"><i class="ph ph-check-circle"></i> done</span>
+              </div>
+              <div class="bulk-item">
+                <span class="bulk-thumb"><i class="ph ph-play"></i></span>
+                <span class="bulk-name">Salt, fat, acid, heat</span>
+                <span class="bulk-status done"><i class="ph ph-check-circle"></i> done</span>
+              </div>
+              <div class="bulk-item">
+                <span class="bulk-thumb"><i class="ph ph-play"></i></span>
+                <span class="bulk-name">The perfect omelette</span>
+                <span class="bulk-status run"><i class="ph ph-circle-notch"></i> fetching</span>
+              </div>
+              <div class="bulk-item">
+                <span class="bulk-thumb"><i class="ph ph-play"></i></span>
+                <span class="bulk-name">Resting your steak</span>
+                <span class="bulk-status wait"><i class="ph ph-clock"></i> queued</span>
+              </div>
+            </div>
+            <div class="bulk-foot">
+              <span class="bulk-bar"><span></span></span>
+              <span class="bulk-count">26 / 41</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PULL QUOTE ── -->
+  <section class="lp-quote">
+    <div class="container">
+      <blockquote>
+        I archived two years of a creator's uploads in an afternoon. <span class="mark">No keys, no dashboards, no nonsense.</span> Just files.
+        <cite>// a developer who reads transcripts faster than they watch</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ── FINAL CTA ── -->
+  <section class="lp-cta-block">
+    <div class="container">
+      <h2>Stop scrubbing. <span class="mark">Start reading.</span></h2>
+      <p>Add the extension, grab the CLI, or just open the web app and paste a link. It is free, it is open source, and it runs on your machine.</p>
+      <div class="hero-ctas">
+        <a href="#" onclick="return false" class="btn btn-primary btn-lg"><i class="ph ph-plus-circle"></i> Add to Chrome</a>
+        <a href="#" onclick="return false" class="btn btn-secondary btn-lg"><i class="ph ph-github-logo"></i> Star on GitHub</a>
+      </div>
+      <div class="cta-sub">// no account, no API key, no telemetry</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── FOOTER ── -->
+<footer class="lp-footer">
+  <div class="container">
+    <div class="footer-brand-block">
+      <a href="#" onclick="return false" class="footer-brand">
+        <span class="lp-brand-mark"></span>
+        TubeScribe
+      </a>
+      <p class="footer-tag">A friendly developer utility for turning YouTube into clean transcript files. Local-first and open source.</p>
+    </div>
+    <nav class="footer-nav">
+      <div class="footer-col">
+        <span class="footer-col-title">Product</span>
+        <a href="#" onclick="return false">Web app</a>
+        <a href="#" onclick="return false">CLI</a>
+        <a href="#" onclick="return false">Chrome extension</a>
+        <a href="#" onclick="return false">Formats</a>
+      </div>
+      <div class="footer-col">
+        <span class="footer-col-title">Project</span>
+        <a href="#" onclick="return false">GitHub</a>
+        <a href="#" onclick="return false">Changelog</a>
+        <a href="#" onclick="return false">License</a>
+        <a href="#" onclick="return false">Privacy</a>
+      </div>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <span>TubeScribe &middot; free &amp; open source</span>
+    <span>Paste a link. Get the words.</span>
+  </div>
+</footer>
+
+<!-- Theme toggle -->
+<div class="theme-bar">
+  <button class="active" data-theme-btn="light">Light</button>
+  <button data-theme-btn="dark">Dark</button>
+</div>
+
+<script>
+  document.querySelectorAll('.theme-bar button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.themeBtn;
+      document.documentElement.dataset.theme = theme;
+      document.querySelectorAll('.theme-bar button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  document.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', e => e.preventDefault());
+  });
+</script>
+</body>
+</html>

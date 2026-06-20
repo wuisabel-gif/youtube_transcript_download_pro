@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "TubeScribe — YouTube Transcript Downloader",
+  "version": "1.0.0",
+  "description": "Download the transcript/captions of any YouTube video as txt, srt, vtt, or json — straight from your browser.",
+  "host_permissions": ["https://www.youtube.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    { "resources": ["inject.js"], "matches": ["https://www.youtube.com/*"] }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TubeScribe — download transcript"
+  }
+}

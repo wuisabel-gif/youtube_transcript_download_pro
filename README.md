@@ -1,4 +1,12 @@
-# TubeScribe
+<p align="center">
+  <img src="assets/logo.png" alt="TubeScribe logo" height="150" />
+</p>
+
+<h1 align="center">TubeScribe</h1>
+
+<p align="center">
+  <img src="assets/mascot.png" alt="TubeScribe mascot" height="180" />
+</p>
 
 Download and archive YouTube transcripts from the command line — in plain text,
 SubRip (`.srt`), WebVTT (`.vtt`), or structured JSON.

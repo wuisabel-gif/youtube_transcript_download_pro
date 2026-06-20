@@ -1,14 +1,6 @@
-<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ff5b50"/>
-      <stop offset="1" stop-color="#e3261d"/>
-    </linearGradient>
-  </defs>
-  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
-  <!-- play mark -->
-  <path d="M50 30 L50 70 L84 50 Z" fill="#ffffff"/>
-  <!-- transcript lines -->
-  <rect x="34" y="86" width="60" height="9" rx="4.5" fill="#ffffff"/>
-  <rect x="34" y="101" width="44" height="9" rx="4.5" fill="#ffffff" fill-opacity="0.85"/>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5b50"/><stop offset="1" stop-color="#e3261d"/></linearGradient></defs><rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)"/>
+<rect x="26" y="30" width="52" height="9" rx="4.5" fill="#ffffff"/>
+<rect x="26" y="48" width="52" height="9" rx="4.5" fill="#ffffff"/>
+<rect x="26" y="66" width="34" height="9" rx="4.5" fill="#ffffff" fill-opacity="0.85"/>
+<path d="M88 30 L88 70 M88 70 L78 60 M88 70 L98 60" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>

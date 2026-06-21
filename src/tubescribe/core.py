@@ -111,6 +111,22 @@ def _explain(exc: Exception) -> str:
         return "this video is age-restricted, so its transcript can't be fetched."
     if isinstance(exc, (VideoUnavailable, VideoUnplayable)):
         return "this video is unavailable or can't be played."
+
+    # Network-level failures (e.g. a 429 from a datacenter IP) come through as
+    # raw requests/urllib3 errors, not youtube-transcript-api exceptions.
+    text = str(exc)
+    if "429" in text or "too many" in text.lower():
+        return (
+            "YouTube is rate-limiting this server (HTTP 429). It treats the request "
+            "as coming from a cloud/datacenter IP. Run TubeScribe locally or use the "
+            "browser extension (your own IP), or set a residential proxy (Webshare "
+            "credentials, or --proxy URL)."
+        )
+    if "Max retries" in text or "ConnectionPool" in text or "ConnectionError" in text:
+        return (
+            "couldn't reach YouTube from this server - the IP is likely blocked. "
+            "Run locally, use the browser extension, or set a residential proxy."
+        )
     return "could not retrieve the transcript (unknown reason)."
 
 
@@ -140,6 +156,10 @@ def fetch_transcript(
         NoTranscriptFound,
     )
 
+    # requests ships with youtube-transcript-api; a 429 from a blocked IP surfaces
+    # as a RequestException rather than a CouldNotRetrieveTranscript.
+    from requests.exceptions import RequestException
+
     langs = list(languages) or ["en"]
     if webshare:
         from youtube_transcript_api.proxies import WebshareProxyConfig
@@ -160,7 +180,7 @@ def fetch_transcript(
 
     try:
         listing = api.list(video_id)
-    except CouldNotRetrieveTranscript as exc:
+    except (CouldNotRetrieveTranscript, RequestException) as exc:
         raise TubeScribeError(_explain(exc)) from exc
 
     available_codes = [t.language_code for t in listing]
@@ -180,7 +200,7 @@ def fetch_transcript(
 
     try:
         fetched = picked.fetch()
-    except CouldNotRetrieveTranscript as exc:
+    except (CouldNotRetrieveTranscript, RequestException) as exc:
         raise TubeScribeError(_explain(exc)) from exc
     segments = [
         Segment(text=row["text"], start=float(row["start"]), duration=float(row["duration"]))

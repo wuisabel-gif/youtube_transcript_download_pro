@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TubeScribe x Obsidian — 3Blue1Brown transcript vault</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #0e0f13;
+    color: #e7e9ee;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  #wrap { position: fixed; inset: 0; }
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+  .panel {
+    position: fixed; top: 18px; left: 18px; max-width: 340px;
+    background: rgba(20,22,28,0.82); backdrop-filter: blur(8px);
+    border: 1px solid #262a33; border-radius: 14px; padding: 16px 18px;
+    pointer-events: none;
+  }
+  .panel h1 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+  .panel .acc { color: #f5564a; }
+  .panel p { margin: 6px 0 0; font-size: 12.5px; color: #9aa1ad; }
+  .legend { position: fixed; bottom: 18px; left: 18px; display: flex; flex-wrap: wrap; gap: 8px 14px;
+    background: rgba(20,22,28,0.82); border: 1px solid #262a33; border-radius: 12px; padding: 10px 14px; pointer-events: none; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #c4c9d2; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .hint { position: fixed; bottom: 18px; right: 18px; font-size: 11.5px; color: #6b7280;
+    background: rgba(20,22,28,0.82); border: 1px solid #262a33; border-radius: 10px; padding: 8px 12px; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c"></canvas></div>
+
+<div class="panel">
+  <h1><span class="acc">3Blue1Brown</span> transcript vault</h1>
+  <p>32 video transcripts bulk-downloaded with TubeScribe, then linked by shared
+  concept the way an Obsidian graph connects notes. Drag nodes, scroll to zoom,
+  hover to trace a topic.</p>
+</div>
+
+<div class="legend">
+  <span><i class="dot" style="background:#a78bfa"></i>Linear algebra</span>
+  <span><i class="dot" style="background:#60a5fa"></i>Calculus</span>
+  <span><i class="dot" style="background:#f87171"></i>Neural networks</span>
+  <span><i class="dot" style="background:#34d399"></i>Fourier &amp; waves</span>
+  <span><i class="dot" style="background:#fbbf24"></i>Number theory</span>
+</div>
+<div class="hint">drag to pan · scroll to zoom · drag a node to pull it</div>
+
+<script>
+const COLORS = { la:"#a78bfa", calc:"#60a5fa", nn:"#f87171", fou:"#34d399", nt:"#fbbf24" };
+
+// --- manually curated example data (a bulk channel download made into a vault) ---
+const N = [
+  // hubs
+  ["LA","Linear Algebra","la",1],["CA","Calculus","calc",1],["NN","Neural Networks","nn",1],
+  ["FO","Fourier & Waves","fou",1],["NT","Number Theory","nt",1],
+  // linear algebra
+  ["la1","Vectors","la",0],["la2","Span & basis","la",0],["la3","Linear transformations","la",0],
+  ["la4","Matrix multiplication","la",0],["la5","The determinant","la",0],["la6","Inverse & null space","la",0],
+  ["la7","Dot products","la",0],["la8","Cross products","la",0],["la9","Change of basis","la",0],
+  ["la10","Eigenvectors & eigenvalues","la",0],["la11","Abstract vector spaces","la",0],
+  // calculus
+  ["ca1","Essence of calculus","calc",0],["ca2","Paradox of the derivative","calc",0],
+  ["ca3","Derivative formulas","calc",0],["ca4","Chain rule & product rule","calc",0],
+  ["ca5","Derivatives of exponentials","calc",0],["ca6","Implicit differentiation","calc",0],
+  ["ca7","Fundamental theorem","calc",0],["ca8","Area and slope","calc",0],["ca9","Taylor series","calc",0],
+  // neural networks
+  ["nn1","What is a neural network?","nn",0],["nn2","Gradient descent","nn",0],
+  ["nn3","Backpropagation","nn",0],["nn4","Backprop calculus","nn",0],
+  // fourier
+  ["fo1","Fourier Transform","fou",0],["fo2","Fourier series","fou",0],
+  ["fo3","Euler's formula","fou",0],["fo4","Convolutions","fou",0],
+  // number theory
+  ["nt1","Primes make spirals","nt",0],["nt2","Pi hiding in primes","nt",0],
+  ["nt3","Riemann zeta function","nt",0],["nt4","Bayes theorem","nt",0],
+];
+const L = [
+  // hub memberships
+  ["LA","la1"],["LA","la2"],["LA","la3"],["LA","la4"],["LA","la5"],["LA","la6"],["LA","la7"],["LA","la8"],["LA","la9"],["LA","la10"],["LA","la11"],
+  ["CA","ca1"],["CA","ca2"],["CA","ca3"],["CA","ca4"],["CA","ca5"],["CA","ca6"],["CA","ca7"],["CA","ca8"],["CA","ca9"],
+  ["NN","nn1"],["NN","nn2"],["NN","nn3"],["NN","nn4"],
+  ["FO","fo1"],["FO","fo2"],["FO","fo3"],["FO","fo4"],
+  ["NT","nt1"],["NT","nt2"],["NT","nt3"],["NT","nt4"],
+  // sequential within series
+  ["la1","la2"],["la2","la3"],["la3","la4"],["la4","la5"],["la5","la6"],["la6","la7"],["la7","la8"],["la8","la9"],["la9","la10"],["la10","la11"],
+  ["ca1","ca2"],["ca2","ca3"],["ca3","ca4"],["ca4","ca5"],["ca5","ca6"],["ca6","ca7"],["ca7","ca8"],["ca8","ca9"],
+  ["nn1","nn2"],["nn2","nn3"],["nn3","nn4"],
+  ["fo1","fo2"],["fo2","fo3"],["fo3","fo4"],
+  ["nt1","nt2"],
+  // cross-topic edges — the interesting part of a knowledge graph
+  ["ca4","nn4"],   // chain rule -> backprop calculus
+  ["la3","nn1"],   // linear transformations -> neural network
+  ["la4","nn1"],   // matrix multiplication -> neural network
+  ["ca2","nn2"],   // derivative -> gradient descent
+  ["ca9","fo3"],   // Taylor series -> Euler's formula
+  ["fo1","fo3"],   // Fourier transform -> Euler's formula
+  ["fo4","fo1"],   // convolutions -> Fourier transform
+  ["ca7","fo1"],   // fundamental theorem (integration) -> Fourier
+  ["fo3","nt3"],   // Euler's formula -> Riemann zeta
+  ["la10","nt3"],  // eigenvalues -> zeta (spectral)
+  ["fo3","CA"],    // Euler bridges into calculus
+];
+
+// --- build node objects ---
+const idx = {};
+const nodes = N.map((d,i) => { const o={id:d[0],label:d[1],g:d[2],hub:!!d[3],deg:0}; idx[d[0]]=o; return o; });
+const links = L.map(l => ({ s: idx[l[0]], t: idx[l[1]] }));
+links.forEach(l => { l.s.deg++; l.t.deg++; });
+const neigh = {}; nodes.forEach(n => neigh[n.id]=new Set());
+links.forEach(l => { neigh[l.s.id].add(l.t.id); neigh[l.t.id].add(l.s.id); });
+
+// seed positions clustered by group
+const groupAnchor = { la:[-260,-120], calc:[240,-150], nn:[40,170], fou:[300,120], nt:[-240,170] };
+nodes.forEach(n => { const a=groupAnchor[n.g]; n.x=a[0]+(Math.random()-0.5)*180; n.y=a[1]+(Math.random()-0.5)*180; n.vx=0; n.vy=0; });
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let W=0,H=0,DPR=1;
+const cam = { x:0, y:0, s:1 };
+function resize(){ DPR=Math.min(window.devicePixelRatio||1,2); W=canvas.clientWidth; H=canvas.clientHeight; canvas.width=W*DPR; canvas.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+window.addEventListener("resize", resize); resize();
+cam.x = W/2; cam.y = H/2;
+
+let alpha = 1;
+function tick(){
+  // repulsion
+  for(let i=0;i<nodes.length;i++){
+    const a=nodes[i];
+    for(let j=i+1;j<nodes.length;j++){
+      const b=nodes[j];
+      let dx=a.x-b.x, dy=a.y-b.y; let d2=dx*dx+dy*dy||0.01; let d=Math.sqrt(d2);
+      const rep=(a.hub||b.hub?2600:1500)/d2; const fx=dx/d*rep, fy=dy/d*rep;
+      a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy;
+    }
+  }
+  // springs
+  for(const l of links){
+    const a=l.s,b=l.t; let dx=b.x-a.x,dy=b.y-a.y; let d=Math.sqrt(dx*dx+dy*dy)||0.01;
+    const rest=(a.hub||b.hub)?90:64; const k=(d-rest)*0.012;
+    const fx=dx/d*k, fy=dy/d*k; a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy;
+  }
+  // gravity to center + integrate
+  for(const n of nodes){
+    n.vx += -n.x*0.0016; n.vy += -n.y*0.0016;
+    if(n===dragNode){ continue; }
+    n.vx*=0.86; n.vy*=0.86;
+    n.x += n.vx*alpha; n.y += n.vy*alpha;
+  }
+  if(alpha>0.05) alpha*=0.997;
+}
+
+function worldToScreen(x,y){ return [x*cam.s+cam.x, y*cam.s+cam.y]; }
+function screenToWorld(x,y){ return [(x-cam.x)/cam.s, (y-cam.y)/cam.s]; }
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  // links
+  for(const l of links){
+    const [x1,y1]=worldToScreen(l.s.x,l.s.y), [x2,y2]=worldToScreen(l.t.x,l.t.y);
+    const lit = hover && (l.s.id===hover.id||l.t.id===hover.id);
+    ctx.strokeStyle = lit ? "rgba(245,86,74,0.65)" : (hover ? "rgba(120,128,140,0.10)" : "rgba(120,128,140,0.22)");
+    ctx.lineWidth = lit ? 1.6 : 1;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  // nodes
+  for(const n of nodes){
+    const [x,y]=worldToScreen(n.x,n.y);
+    const base = n.hub ? 11 : 4 + Math.min(n.deg,6)*1.1;
+    const r = base*Math.max(0.7,Math.min(cam.s,1.6));
+    const dim = hover && hover.id!==n.id && !neigh[hover.id].has(n.id);
+    ctx.globalAlpha = dim ? 0.25 : 1;
+    // glow
+    ctx.shadowColor = COLORS[n.g]; ctx.shadowBlur = n.hub?18:(hover&&!dim?14:7);
+    ctx.fillStyle = COLORS[n.g];
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    if(n.hub){ ctx.lineWidth=2; ctx.strokeStyle="rgba(255,255,255,0.85)"; ctx.stroke(); }
+    // labels: hubs always; others when zoomed in, hovered, or neighbor
+    const showLabel = n.hub || cam.s>1.15 || (hover && (hover.id===n.id || neigh[hover.id].has(n.id)));
+    if(showLabel){
+      ctx.globalAlpha = dim?0.3:1;
+      ctx.font = (n.hub?"700 13px ":"500 11px ")+"-apple-system, system-ui, sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="top";
+      ctx.fillStyle = n.hub ? "#f2f3f6" : "#c2c7d0";
+      ctx.fillText(n.label, x, y+r+4);
+    }
+    ctx.globalAlpha=1;
+  }
+}
+
+let hover=null, dragNode=null, panning=false, last=[0,0], moved=false;
+let frame=0, userTouched=false;
+function fitView(pad){
+  pad=pad||90; let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  for(const n of nodes){ if(n.x<minx)minx=n.x; if(n.y<miny)miny=n.y; if(n.x>maxx)maxx=n.x; if(n.y>maxy)maxy=n.y; }
+  const gw=(maxx-minx)||1, gh=(maxy-miny)||1;
+  cam.s=Math.max(0.4,Math.min((W-pad*2)/gw,(H-pad*2)/gh,2));
+  cam.x=W/2-(minx+maxx)/2*cam.s; cam.y=H/2-(miny+maxy)/2*cam.s;
+}
+function pick(mx,my){
+  let best=null,bd=1e9;
+  for(const n of nodes){ const [x,y]=worldToScreen(n.x,n.y); const r=(n.hub?13:7)*Math.max(0.8,cam.s);
+    const d=(x-mx)**2+(y-my)**2; if(d<r*r && d<bd){bd=d;best=n;} }
+  return best;
+}
+canvas.addEventListener("mousedown",e=>{ userTouched=true; const n=pick(e.offsetX,e.offsetY); moved=false; last=[e.offsetX,e.offsetY];
+  if(n){ dragNode=n; n.fx=true; } else { panning=true; canvas.classList.add("dragging"); } });
+window.addEventListener("mousemove",e=>{
+  const r=canvas.getBoundingClientRect(); const mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(dragNode){ const [wx,wy]=screenToWorld(mx,my); dragNode.x=wx; dragNode.y=wy; dragNode.vx=0; dragNode.vy=0; alpha=Math.max(alpha,0.4); moved=true; }
+  else if(panning){ cam.x+=mx-last[0]; cam.y+=my-last[1]; last=[mx,my]; moved=true; }
+  else { hover=pick(mx,my); canvas.style.cursor = hover?"pointer":"grab"; }
+});
+window.addEventListener("mouseup",()=>{ if(dragNode){dragNode.fx=false;dragNode=null;} panning=false; canvas.classList.remove("dragging"); });
+canvas.addEventListener("wheel",e=>{ e.preventDefault(); const r=canvas.getBoundingClientRect(); const mx=e.clientX-r.left,my=e.clientY-r.top;
+  const [wx,wy]=screenToWorld(mx,my); const f=Math.exp(-e.deltaY*0.0012); cam.s=Math.max(0.4,Math.min(3,cam.s*f));
+  cam.x=mx-wx*cam.s; cam.y=my-wy*cam.s; userTouched=true; },{passive:false});
+
+(function loop(){ tick(); if(!userTouched && frame<220) fitView(); frame++; draw(); requestAnimationFrame(loop); })();
+</script>
+</body>
+</html>

@@ -32,6 +32,33 @@
   .dot { width: 10px; height: 10px; border-radius: 50%; }
   .hint { position: fixed; bottom: 18px; right: 18px; font-size: 11.5px; color: #6b7280;
     background: rgba(20,22,28,0.82); border: 1px solid #262a33; border-radius: 10px; padding: 8px 12px; pointer-events: none; }
+
+  .howto-btn { position: fixed; top: 18px; right: 18px; z-index: 5;
+    background: #e3261d; color: #fff; border: 0; border-radius: 11px; padding: 9px 15px;
+    font: 600 13px/1 -apple-system, system-ui, sans-serif; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(227,38,29,0.35); transition: background .15s ease; }
+  .howto-btn:hover { background: #c01b13; }
+
+  .howto { position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 92vw; z-index: 10;
+    background: #14161c; border-left: 1px solid #262a33; box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+    padding: 26px 30px 40px; overflow-y: auto; }
+  .howto[hidden] { display: none; }
+  .howto-close { position: absolute; top: 16px; right: 18px; background: none; border: 0;
+    color: #9aa1ad; font-size: 26px; line-height: 1; cursor: pointer; }
+  .howto-close:hover { color: #fff; }
+  .howto h2 { margin: 0 0 4px; font-size: 19px; }
+  .howto .lede { margin: 0 0 18px; color: #9aa1ad; font-size: 13px; }
+  .howto ol { margin: 0; padding-left: 20px; }
+  .howto li { margin: 0 0 16px; font-size: 13.5px; line-height: 1.55; color: #d3d7df; }
+  .howto li b { color: #fff; }
+  .howto pre { margin: 8px 0 0; padding: 10px 12px; background: #0e0f13; border: 1px solid #262a33;
+    border-radius: 9px; font: 12px/1.5 "JetBrains Mono", ui-monospace, monospace; color: #f0938b;
+    white-space: pre-wrap; overflow-x: auto; }
+  .howto code { background: #0e0f13; border: 1px solid #262a33; border-radius: 5px;
+    padding: 1px 5px; font: 12px "JetBrains Mono", ui-monospace, monospace; color: #e7b0aa; }
+  .howto kbd { background: #262a33; border-radius: 4px; padding: 1px 6px; font-size: 11px; }
+  .howto .tip { margin: 22px 0 0; padding: 12px 14px; background: rgba(227,38,29,0.10);
+    border: 1px solid rgba(227,38,29,0.3); border-radius: 10px; font-size: 12.5px; color: #e7c3bf; }
 </style>
 </head>
 <body>
@@ -52,6 +79,46 @@
   <span><i class="dot" style="background:#fbbf24"></i>Number theory</span>
 </div>
 <div class="hint">drag to pan · scroll to zoom · drag a node to pull it</div>
+
+<button id="howto-btn" class="howto-btn">＋ Build your own vault</button>
+
+<div id="howto" class="howto" hidden>
+  <button id="howto-close" class="howto-close" aria-label="Close">×</button>
+  <h2>Build your own Obsidian vault</h2>
+  <p class="lede">Turn a whole channel into a graph like this in five steps.</p>
+
+  <ol>
+    <li>
+      <b>Bulk-download the transcripts.</b> Point TubeScribe at a channel or playlist
+      and write one file per video:
+      <pre>tubescribe "https://www.youtube.com/@3blue1brown" \
+  -f txt -o vault/ -n 40</pre>
+      (No CLI? Use the browser extension on each video.)
+    </li>
+    <li>
+      <b>Make them notes.</b> Obsidian notes are Markdown, so rename each
+      <code>.txt</code> to <code>.md</code> and give it the video's title. A one-line
+      loop does the batch: <code>for f in vault/*.txt; do mv "$f" "$&#123;f%.txt&#125;.md"; done</code>.
+    </li>
+    <li>
+      <b>Open the folder as a vault.</b> In Obsidian choose
+      <i>Open folder as vault</i> and pick <code>vault/</code>.
+    </li>
+    <li>
+      <b>Connect them.</b> Edges in the graph come from links and tags. Add a topic
+      tag at the top of each note (<code>#linear-algebra</code>), or drop a
+      <code>[[Eigenvectors and eigenvalues]]</code> wikilink where one video builds on
+      another. Every tag and link becomes an edge.
+    </li>
+    <li>
+      <b>Open Graph View</b> (<kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>G</kbd>). Under
+      <i>Groups</i>, color by tag and you get exactly what you see here.
+    </li>
+  </ol>
+
+  <p class="tip"><b>Tip:</b> export as <code>json</code> instead of <code>txt</code> to keep
+  timestamps, so you can deep-link to a moment inside a note.</p>
+</div>
 
 <script>
 const COLORS = { la:"#a78bfa", calc:"#60a5fa", nn:"#f87171", fou:"#34d399", nt:"#fbbf24" };
@@ -228,6 +295,12 @@ canvas.addEventListener("wheel",e=>{ e.preventDefault(); const r=canvas.getBound
   cam.x=mx-wx*cam.s; cam.y=my-wy*cam.s; userTouched=true; },{passive:false});
 
 (function loop(){ tick(); if(!userTouched && frame<220) fitView(); frame++; draw(); requestAnimationFrame(loop); })();
+
+// how-to panel toggle
+const howto=document.getElementById("howto");
+document.getElementById("howto-btn").addEventListener("click",()=>{ howto.hidden=false; });
+document.getElementById("howto-close").addEventListener("click",()=>{ howto.hidden=true; });
+window.addEventListener("keydown",e=>{ if(e.key==="Escape") howto.hidden=true; });
 </script>
 </body>
 </html>

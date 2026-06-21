@@ -452,6 +452,32 @@
         opacity: 0.55;
         cursor: not-allowed;
       }
+      a.btn {
+        text-decoration: none;
+      }
+
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .fetch-note {
+        margin: 0 0 16px;
+        padding: 11px 14px;
+        background: var(--accent-subtle, #fcddda);
+        border: 1px solid #f3b6b0;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--slate-700);
+      }
+      .fetch-note a {
+        color: var(--brand-blue);
+        font-weight: 600;
+      }
       .btn-ghost {
         border-color: transparent;
         background: transparent;
@@ -931,6 +957,28 @@
               </li>
             </ul>
 
+            <div class="hero-cta">
+              <a
+                class="btn btn-primary"
+                href="https://github.com/wuisabel-gif/youtube_transcript_download_pro/tree/main/extension"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M8 1.5a.75.75 0 0 1 .75.75v6.19l1.72-1.72a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 0 1 1.06-1.06l1.72 1.72V2.25A.75.75 0 0 1 8 1.5ZM3 11.75a.75.75 0 0 1 .75.75v.5c0 .14.11.25.25.25h8a.25.25 0 0 0 .25-.25v-.5a.75.75 0 0 1 1.5 0v.5A1.75 1.75 0 0 1 12 14.75H4a1.75 1.75 0 0 1-1.75-1.75v-.5a.75.75 0 0 1 .75-.75Z"/>
+                </svg>
+                Get the browser extension
+              </a>
+              <a
+                class="btn"
+                href="https://github.com/wuisabel-gif/youtube_transcript_download_pro#readme"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Use the CLI
+              </a>
+            </div>
+
             <!-- COMPOSER -->
             <div class="card composer">
               <div class="tabs" role="tablist">
@@ -940,6 +988,19 @@
 
               <!-- TAB: GET TRANSCRIPT -->
               <div data-panel="get">
+                <p class="fetch-note">
+                  <strong>Fetching from this hosted site is limited.</strong> YouTube blocks the
+                  server's datacenter IP, so live fetch often fails here. For reliable downloads,
+                  install the free
+                  <a
+                    href="https://github.com/wuisabel-gif/youtube_transcript_download_pro/tree/main/extension"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >browser extension</a
+                  >
+                  (it runs on your own connection) or use the CLI. The
+                  <strong>Convert transcript</strong> tab works right here for everyone.
+                </p>
                 <label class="field-label" for="urls">YouTube URLs or video ids — one per line</label>
                 <textarea id="urls" placeholder="https://www.youtube.com/watch?v=8jPQjjsBbIc
 https://www.youtube.com/playlist?list=PLOU2XLYxmsIKpaV8h0AGE05so0fAwwfTw

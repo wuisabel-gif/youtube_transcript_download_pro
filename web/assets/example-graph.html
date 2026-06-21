@@ -182,14 +182,18 @@ function draw(){
     ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
     ctx.shadowBlur = 0;
     if(n.hub){ ctx.lineWidth=2; ctx.strokeStyle="rgba(255,255,255,0.85)"; ctx.stroke(); }
-    // labels: hubs always; others when zoomed in, hovered, or neighbor
-    const showLabel = n.hub || cam.s>1.15 || (hover && (hover.id===n.id || neigh[hover.id].has(n.id)));
+    // labels: hubs always; videos only when zoomed in, hovered, or a neighbour
+    // of the hovered node — keeps the graph from becoming a wall of text.
+    const showLabel = n.hub || cam.s>1.7 || (hover && (hover.id===n.id || neigh[hover.id].has(n.id)));
     if(showLabel){
       ctx.globalAlpha = dim?0.3:1;
-      ctx.font = (n.hub?"700 13px ":"500 11px ")+"-apple-system, system-ui, sans-serif";
+      ctx.font = (n.hub?"700 13px ":"500 11.5px ")+"-apple-system, system-ui, sans-serif";
       ctx.textAlign="center"; ctx.textBaseline="top";
-      ctx.fillStyle = n.hub ? "#f2f3f6" : "#c2c7d0";
-      ctx.fillText(n.label, x, y+r+4);
+      const ly = y+r+5;
+      ctx.lineWidth=3; ctx.lineJoin="round"; ctx.strokeStyle="rgba(14,15,19,0.92)";
+      ctx.strokeText(n.label, x, ly);            // dark halo so text stays legible
+      ctx.fillStyle = n.hub ? "#f2f3f6" : "#cfd4dd";
+      ctx.fillText(n.label, x, ly);
     }
     ctx.globalAlpha=1;
   }

@@ -3,7 +3,11 @@
 </p>
 
 <h1 align="center">TubeScribe</h1>
-<img src="https://img.shields.io/badge/license-Apache%202.0-555?style=flat-square" alt="Apache 2.0" />
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-555?style=flat-square" alt="MIT" />
+</p>
+
 Download and archive YouTube transcripts from the command line — in plain text,
 SubRip (`.srt`), WebVTT (`.vtt`), or structured JSON.
 
